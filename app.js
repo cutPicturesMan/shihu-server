@@ -4,9 +4,19 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
+mongoose.connect('mongodb://localhost:27017/shihu');
+
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error'));
+db.once('open', function(){
+  console.log('连接成功');
+});
+
+var index = require('./admin/routes/index');
+var users = require('./admin/routes/users');
+var adminMerchant = require('./admin/controllers/Merchant');
 
 var app = express();
 
@@ -24,6 +34,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+
+app.use('/admin/merchant', adminMerchant);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
