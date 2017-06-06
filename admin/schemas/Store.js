@@ -1,12 +1,12 @@
 let mongoose = require('mongoose');
 
-let MerchantListSchema = mongoose.Schema({
+let StoreSchema = mongoose.Schema({
   name: String,
   category: Number
 });
 
-MerchantListSchema.methods.speak = function(){
+StoreSchema.methods.speak = function(){
   console.log('打印出名字：' + this.name);
 }
 
-module.exports = MerchantListSchema;
+module.exports = StoreSchema;

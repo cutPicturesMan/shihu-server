@@ -1,4 +1,4 @@
-let MerchantList = require('../models/MerchantList');
+let Store = require('../models/Store');
 
 let express = require('express');
 let app = express();
@@ -21,13 +21,23 @@ app.get('/list', function (req, res) {
   res.send(list);
 });
 
-// 新增商家
-app.post('/add', function (req, res) {
+// 商家分类
+app.get('/category', function (req, res) {
+  res.send('商家分类页');
+});
+
+// 新增店铺
+app.post('/storeAdd', function (req, res) {
   console.log(req.body);
   // req.
   // new MerchantList({
   //   name:
   // });
+});
+
+// 新增店铺分类
+app.post('/categoryAdd', function (req, res) {
+  console.log(req.body);
 
   let feilipu = new MerchantList({
     name: '飞利浦',
@@ -40,15 +50,6 @@ app.post('/add', function (req, res) {
 
   console.log(feilipu);
   feilipu.speak();
-
-  // feilipu.save((err, ) => {
-  //
-  // });
-});
-
-// 商家分类
-app.get('/category', function (req, res) {
-  res.send('商家分类页');
 });
 
 module.exports = app;

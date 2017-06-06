@@ -16,7 +16,7 @@ db.once('open', function(){
 
 var index = require('./admin/routes/index');
 var users = require('./admin/routes/users');
-var adminMerchant = require('./admin/controllers/Merchant');
+var adminMerchant = require('./admin/controllers/Store');
 
 var app = express();
 
