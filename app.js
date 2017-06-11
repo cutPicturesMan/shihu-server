@@ -16,7 +16,7 @@ db.once('open', function(){
 
 var index = require('./admin/routes/index');
 var users = require('./admin/routes/users');
-var adminMerchant = require('./admin/controllers/Store');
+var adminStore = require('./admin/controllers/Store');
 
 var app = express();
 
@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/users', users);
 
-app.use('/admin/merchant', adminMerchant);
+app.use('/admin/store', adminStore);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
