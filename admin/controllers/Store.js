@@ -4,32 +4,12 @@ let StoreCategory = require('../models/StoreCategory');
 let express = require('express');
 let router = express.Router();
 
-// 商家列表
-app.get('/list', function (req, res) {
-
-  let list = [{
-    id: 1,
-    name: '飞利浦旗舰店',
-    category: 1,
-    categoryName: '护理用品'
-  }, {
-    id: 2,
-    name: '三只松鼠',
-    category: 2,
-    categoryName: '零食饮料'
-  }];
-
-  res.send(list);
-});
-
-// 新增店铺
-app.post('/storeAdd', function (req, res) {
-  console.log(req.body);
-  // req.
-  // new MerchantList({
-  //   name:
-  // });
-});
+router.route('/aaa')
+  .get((req, res)=>{
+    res.send({
+      title: 'zz'
+    });
+  });
 
 // 查询商家分类名是否唯一
 router.route('/categoryName')
