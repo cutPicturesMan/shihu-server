@@ -14,9 +14,10 @@ db.once('open', function(){
   console.log('连接成功');
 });
 
-var index = require('./admin/routes/index');
-var users = require('./admin/routes/users');
-var adminStore = require('./admin/controllers/Store');
+var index = require('./Admin/Routes/index');
+var users = require('./Admin/Routes/users');
+var AdminStore = require('./Admin/Controller/Store');
+var AdminStoreCategory = require('./Admin/Controller/StoreCategory');
 
 var app = express();
 
@@ -35,7 +36,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/users', users);
 
-app.use('/admin/store', adminStore);
+app.use('/Admin/Store', AdminStore);
+app.use('/Admin/StoreCategory', AdminStoreCategory);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

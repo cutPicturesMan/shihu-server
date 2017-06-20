@@ -1,18 +1,10 @@
-let Store = require('../models/Store');
-let StoreCategory = require('../models/StoreCategory');
+let StoreCategory = require('../Model/StoreCategory');
 
 let express = require('express');
 let router = express.Router();
 
-router.route('/aaa')
-  .get((req, res)=>{
-    res.send({
-      title: 'zz'
-    });
-  });
-
 // 查询商家分类名是否唯一
-router.route('/categoryName')
+router.route('/CheckName')
   .post((req, res) => {
     let data = req.body;
 
@@ -33,17 +25,17 @@ router.route('/categoryName')
       } else {
         res.send({
           result: 1,
-          msg: '该商家分类名称可以使用'
+          msg: '商家分类名称可以使用'
         });
       }
     });
   });
 
 // 商家分类
-router.route('/category')
-// 查询
+router.route('/')
+  // 查询
   .get((req, res) => {
-    StoreCategory.find({}, (err, categorys) => {
+    StoreCategory.find({}, (err, categories) => {
       if (err) {
         return res.send({
           result: 0,
@@ -51,7 +43,7 @@ router.route('/category')
         });
       }
 
-      res.send(categorys);
+      res.send(categories);
     });
   })
   // 新增
@@ -78,8 +70,8 @@ router.route('/category')
   });
 
 // 每条商家分类
-router.route('/category/:_id')
-// 修改
+router.route('/:_id')
+  // 修改
   .put((req, res) => {
     StoreCategory.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
       if (err) {

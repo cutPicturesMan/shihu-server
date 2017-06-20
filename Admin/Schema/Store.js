@@ -5,8 +5,12 @@ let StoreSchema = mongoose.Schema({
   category: Number
 });
 
-StoreSchema.methods.speak = function(){
+StoreSchema.pre('save', (res, req) => {
+  console.log(111);
+});
+
+StoreSchema.methods.speak = function () {
   console.log('打印出名字：' + this.name);
-}
+};
 
 module.exports = StoreSchema;
