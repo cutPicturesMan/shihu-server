@@ -26,7 +26,7 @@ router.route('/aaa')
 
 
 // 查询商家名是否唯一
-router.route('/Name')
+router.route('/check_name')
   .post((req, res) => {
     let data = req.body;
 

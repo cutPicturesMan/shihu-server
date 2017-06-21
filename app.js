@@ -36,8 +36,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/users', users);
 
-app.use('/Admin/Store', AdminStore);
-app.use('/Admin/StoreCategory', AdminStoreCategory);
+app.use('/store', AdminStore);
+app.use('/store_category', AdminStoreCategory);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

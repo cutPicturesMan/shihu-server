@@ -4,7 +4,7 @@ let express = require('express');
 let router = express.Router();
 
 // 查询商家分类名是否唯一
-router.route('/CheckName')
+router.route('/check_name')
   .post((req, res) => {
     let data = req.body;
 
