@@ -2,13 +2,13 @@
 
 ### 1、公共接口
 
-[商家Api](./doc/public/store.md)
+[商家Api](./doc/store.md)
 
-[商家分类Api](./doc/public/store_category.md)
+[商家分类Api](./doc/store_category.md)
 
-[菜品Api](./doc/public/food.md)
+[菜品Api](./doc/food.md)
 
-[菜品分类Api](./doc/public/food_category.md)
+[菜品分类Api](./doc/food_category.md)
 
 ### 2、后台接口
 

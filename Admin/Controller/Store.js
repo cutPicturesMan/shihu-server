@@ -4,8 +4,44 @@ let express = require('express');
 let router = express.Router();
 
 router.route('/')
-  .get((req, res)=>{
-    console.log(0);
+  // 查询商家列表
+  .get((req, res) => {
+    console.log(req.body);
+    console.log(req.query.limit);
+    console.log(typeof req.query.limit);
+
+    Store.find({}, (err, stores) => {
+      if (err) {
+        return res.send({
+          result: 0,
+          msg: err
+        });
+      }
+
+      res.send(stores);
+    });
+  })
+  // 新增
+  .post((req, res) => {
+    let data = req.body;
+
+    let category = new Store({
+      name: data.name
+    });
+
+    category.save((err) => {
+      if (err) {
+        return res.send({
+          result: 0,
+          msg: err
+        });
+      }
+
+      res.send({
+        result: 1,
+        msg: '新增成功'
+      });
+    });
   });
 
 router.route('/:id')
@@ -24,10 +60,9 @@ router.route('/aaa')
     });
   });
 
-
 // 查询商家名是否唯一
-router.route('/check_name')
-  .post((req, res) => {
+router
+  .post('/check_name', (req, res) => {
     let data = req.body;
 
     Store.findOne({name: data.name}, (err, store) => {
@@ -53,48 +88,11 @@ router.route('/check_name')
     });
   });
 
-router.route('/List')
-// 查询商家列表
-  .get((req, res) => {
-    StoreCategory.find({}, (err, categorys) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      res.send(categorys);
-    });
-  })
-  // 新增
-  .post((req, res) => {
-    let data = req.body;
-
-    let category = new StoreCategory({
-      name: data.name
-    });
-
-    category.save((err) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      res.send({
-        result: 1,
-        msg: '新增成功'
-      });
-    });
-  });
-
 // 每条商家分类
-router.route('/category/:_id')
-// 修改
+router.route('/:_id')
+  // 修改
   .put((req, res) => {
-    StoreCategory.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
+    Store.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
       if (err) {
         return res.send({
           result: 0,
@@ -110,7 +108,7 @@ router.route('/category/:_id')
   })
   // 删除
   .delete((req, res) => {
-    StoreCategory.remove({_id: req.params._id}, (err, result) => {
+    Store.remove({_id: req.params._id}, (err, result) => {
       if (err) {
         return res.send({
           result: 0,
