@@ -1,51 +1,76 @@
 let Store = require('../Model/Store');
-
+let utils = require('../Public/javascripts/utils');
 let express = require('express');
 let router = express.Router();
+let assert = require('assert');
 
 router.route('/')
-  // 查询商家列表
+// 查询商家列表
   .get((req, res) => {
-    console.log(req.body);
-    console.log(req.query.limit);
-    console.log(typeof req.query.limit);
-
     Store.find({}, (err, stores) => {
       if (err) {
         return res.send({
           result: 0,
-          msg: err
+          error: err
         });
       }
 
       res.send(stores);
     });
   })
-  // 新增
+  // 新增商家
   .post((req, res) => {
-    let data = req.body;
+    let store = new Store(req.body);
 
-    let category = new Store({
-      name: data.name
-    });
+    let error = store.validateSync();
+    if (error) {
+      return res.send({
+        result: null,
+        error: utils.validateErrors(error)
+      });
+    }
 
-    category.save((err) => {
+    Store.findOne({name: store.name}, (err, data) => {
       if (err) {
         return res.send({
-          result: 0,
-          msg: err
+          result: null,
+          error: {
+            code: err.code,
+            message: err.errmsg
+          }
         });
       }
 
-      res.send({
-        result: 1,
-        msg: '新增成功'
-      });
+      if(data){
+        res.send({
+          result: null,
+          error: {
+            message: '餐厅名称重复'
+          }
+        });
+      }else{
+        store.save((err) => {
+          if (err) {
+            return res.send({
+              result: null,
+              error: {
+                code: err.code,
+                message: err.errmsg
+              }
+            });
+          }
+
+          res.send({
+            result: store,
+            error: null
+          });
+        });
+      }
     });
   });
 
 router.route('/:id')
-  .get((req, res)=>{
+  .get((req, res) => {
     console.log(1);
     res.send({
       title: 'id'
@@ -53,7 +78,7 @@ router.route('/:id')
   });
 
 router.route('/aaa')
-  .get((req, res)=>{
+  .get((req, res) => {
     console.log(2);
     res.send({
       title: 'zz'
@@ -90,7 +115,7 @@ router
 
 // 每条商家分类
 router.route('/:_id')
-  // 修改
+// 修改
   .put((req, res) => {
     Store.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
       if (err) {

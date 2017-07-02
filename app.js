@@ -18,6 +18,7 @@ var index = require('./Admin/Routes/index');
 var users = require('./Admin/Routes/users');
 var AdminStore = require('./Admin/Controller/Store');
 var AdminStoreCategory = require('./Admin/Controller/StoreCategory');
+var test = require('./Admin/Controller/test');
 
 var app = express();
 
@@ -38,6 +39,7 @@ app.use('/users', users);
 
 app.use('/store', AdminStore);
 app.use('/store_category', AdminStoreCategory);
+app.use('/test', test);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -48,6 +50,9 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
+  console.log('xxxxxxxxxxxxxxxxxxxx');
+  console.log('我是错误');
+  console.log('xxxxxxxxxxxxxxxxxxxx');
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
