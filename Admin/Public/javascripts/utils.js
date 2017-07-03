@@ -1,5 +1,5 @@
 const utils = {
-  // 验证错误列表
+  // validate错误列表
   validateErrors (error = {}) {
     // 错误对象
     let errors = error.errors || {};
@@ -14,6 +14,22 @@ const utils = {
     });
 
     return errs;
+  },
+  /**
+   * 将时间戳转为2017-05-26
+   * @param date 日期，默认为今天
+   * @param line 日期分割符，2017-05-26，2017_05_26
+   * @returns {string}
+   */
+  formatDateToYMD(date = new Date(), line = '-'){
+    let y = date.getFullYear();
+    let m = date.getMonth() + 1;
+    let d = date.getDate();
+
+    m = (m.toString().length < 2) ? ('0' + m) : m;
+    d = (d.toString().length < 2) ? ('0' + d) : d;
+
+    return `${y}${line}${m}${line}${d}`;
   }
 };
 
