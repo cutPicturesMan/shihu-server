@@ -3,7 +3,7 @@ let mongoose = require('mongoose');
 let multer = require('multer');
 let path = require('path');
 let fs = require('fs');
-let gm = require('gm');
+let gm = require('gm').subClass({imageMagick: true});
 let utils = require('../Public/javascripts/utils.js');
 
 let Schema = mongoose.Schema;
@@ -92,12 +92,20 @@ let upload = multer(uploadConfig).array('ImgList', 12);
 
 router.route('/')
   .get((req, res) => {
-    gm('./Upload/20170704/1.jpg')
-      .size(function (err, size) {
-        if (!err)
-          console.log(size.width);
-          console.log(size.width > size.height ? 'wider' : 'taller than you');
+    // creating an image
+    gm(200, 400, "#ddff99f3")
+      .drawText(10, 50, "from scratch")
+      .write("./11111.jpg", function (err) {
+        // ...
+        console.log(err);
       });
+    // gm('./Upload/20170704/1.jpg')
+    //   .size(function (err, size) {
+    //     console.log(err);
+    //     if (!err)
+    //       console.log(size.width);
+    //       console.log(size.width > size.height ? 'wider' : 'taller than you');
+    //   });
       // .resize(240, 240)
       // // .noProfile()
       // .write('12345.jpg', function (err) {
