@@ -1,34 +1,71 @@
+let express = require('express');
 let mongoose = require('mongoose');
-let Schema = mongoose.Schema;
+let multer = require('multer');
+let path = require('path');
+let fs = require('fs');
+let gm = require('gm');
 let utils = require('../Public/javascripts/utils.js');
 
-let express = require('express');
+let Schema = mongoose.Schema;
 let router = express.Router();
+// 上传到服务器Upload文件夹下的文件列表
+let fileList = [];
 
-let multer = require('multer');
-let md5 = require('md5');
+// 上传错误
+const errorMessages = {
+  'LIMIT_PART_COUNT': '上传字段和上传文件的总和超出限制',
+  'LIMIT_FILE_SIZE': '上传文件大小超过限制',
+  'LIMIT_FILE_COUNT': '上传文件数量超过限制',
+  'LIMIT_UNEXPECTED_FILE': '上传文件的字段名称未填写',
+  'LIMIT_FIELD_KEY': '上传字段名称过长',
+  'LIMIT_FIELD_VALUE': '上传字段值过长',
+  'LIMIT_FIELD_COUNT': '上传字段数量超过限制'
+};
+
 let storage = multer.diskStorage({
-  // 存放目录
-  destination: 'Admin/Public/images',
-  // 文件名：当天时间_文件名_md5(文件信息).后缀
-  filename: function (req, file, cb) {
+  // 存放目录，在./Admin/Upload下，以日期来创建文件夹，如：./Admin/Upload/20170526
+  destination: (req, file, cb) => {
     // 今天日期
-    let date = utils.formatDateToYMD(undefined, '_');
+    let date = utils.formatDateToYMD(undefined, '');
+    let path = './Upload/' + date;
+
+    // 如果存在以今天日期命名的文件夹，则直接把图片存到该文件夹
+    if (utils.fsExistsSync(path)) {
+      cb(null, path);
+    } else {
+      // 否则新建一个文件夹
+      fs.mkdir(path);
+    }
+  },
+  // 文件名：时间戳_文件名.后缀
+  filename: function (req, file, cb) {
     // 分割之后的文件名数组
     let originalnameArr = file.originalname.split('.');
     // 文件名，'fruit.apple.jpg' -> 'fruit.apple'
     let name = file.originalname.slice(0, file.originalname.lastIndexOf('.'));
     // 文件的扩展名，'.jpg'
     let extension = originalnameArr[originalnameArr.length - 1];
-    let result = `${date}_${name}_${md5(file)}.${extension}`;
-    cb(null, result);
+    let fileName = `${new Date().getTime()}_${name}.${extension}`;
+    // 缩略图
+    let thumbName = `${new Date().getTime()}_${name}_small.${extension}`;
+    // 今天日期
+    let date = utils.formatDateToYMD(undefined, '');
+
+    fileList.push({
+      imgUrl: `${date}/${fileName}`,
+      thumbUrl: `${date}/${thumbName}`
+    });
+
+    // fs.readFileSync(path.join(__dirname, fileName));
+    // fs.readFileSync('./Upload/' + date + '/' + fileName);
+
+    cb(null, fileName);
   }
 });
 
 // 上传文件的配置
 let uploadConfig = {
-  // 存放目录
-  // dest: 'Admin/Public/images',
+  // 存储设置
   storage: storage,
   limits: {
     // 每个文件大小限制为2M
@@ -39,38 +76,61 @@ let uploadConfig = {
   // 文件类型过滤
   fileFilter: (req, file, cb) => {
     let filter = 'jpg|jpeg|png';
+    // 获取文件后缀
     let result = ~filter.indexOf(file.mimetype.split('/')[1]);
 
     // 如果图片类型在允许的列表中，则接收
-    if(result){
+    if (result) {
       cb(null, true);
-    }else{
+    } else {
       cb(null, false);
     }
   }
 };
 
-let upload = multer(uploadConfig).array('imgs', 12);
+let upload = multer(uploadConfig).array('ImgList', 12);
 
 router.route('/')
+  .get((req, res) => {
+    gm('./Upload/20170704/1.jpg')
+      .size(function (err, size) {
+        if (!err)
+          console.log(size.width);
+          console.log(size.width > size.height ? 'wider' : 'taller than you');
+      });
+      // .resize(240, 240)
+      // // .noProfile()
+      // .write('12345.jpg', function (err) {
+      //   if (!err) console.log('done');
+      // });
+
+    res.send({
+      result: '成功'
+    });
+    console.log('````````');
+  })
   .post((req, res) => {
     upload(req, res, (err) => {
+      console.log(req.files);
       if (err) {
-        err.message = '';
-        if(err.code === 'LIMIT_FILE_COUNT'){
-          err.message = '图片上传数量超过8张';
+        let error = {
+          code: err.code,
+          message: '上传文件发生错误：' + err.code
+        };
+        // 将错误提示转为中文
+        if (err.code in errorMessages) {
+          error.message = errorMessages[err.code];
         }
-        console.log(JSON.stringify(err));
         return res.send({
-          result: 'bbb',
-          erros: err
+          result: null,
+          error: error
         });
       }
-
       res.send({
-        result: '成功',
-        erros: null
+        result: fileList,
+        error: null
       });
+      fileList = [];
     });
   });
 

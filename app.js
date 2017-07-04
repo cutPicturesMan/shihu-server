@@ -33,6 +33,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// 文件上传目录
+app.use(express.static(path.join(__dirname, 'Upload')));
 
 app.use('/', index);
 app.use('/users', users);
