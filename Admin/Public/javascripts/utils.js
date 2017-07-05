@@ -27,6 +27,33 @@ const utils = {
     return true;
   },
   /**
+   * 将时间戳与上传文件名组合，返回新生成的文件名以及相应的缩略图名称
+   * @param file，文件名，如'food.cake.jpg'
+   * @returns {{fileName: string, thumbName: string}}
+   * {
+   *    fileName: 1499225675267_food.cake.jpg
+   *    thumbName: 1499225675267_food.cake_small.jpg
+   * }
+   */
+  generateUploadFileName (originalname = '') {
+    // 分割之后的文件名数组
+    let originalnameArr = originalname.split('.');
+    // 去掉扩展名之后的纯文件名，'food.cake.jpg' -> 'food.cake'
+    let name = originalname.slice(0, originalname.lastIndexOf('.'));
+    // 文件的扩展名，'.jpg'
+    let extension = originalnameArr[originalnameArr.length - 1];
+
+    // 文件名
+    let fileName = `${new Date().getTime()}_${name}.${extension}`;
+    // 缩略图
+    let thumbName = `${new Date().getTime()}_${name}_small.${extension}`;
+
+    return {
+      fileName: fileName,
+      thumbName: thumbName
+    }
+  },
+  /**
    * 将时间戳格式化为时间 '2017-05-26 09:06:03'
    * @param date 日期，默认为今天
    * @param space 日期和时间的分割符，默认为空格，'2017-05-26 09:06:03'

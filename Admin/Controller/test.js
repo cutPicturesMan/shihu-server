@@ -22,46 +22,36 @@ const errorMessages = {
   'LIMIT_FIELD_COUNT': '上传字段数量超过限制'
 };
 
-let storage = multer.diskStorage({
-  // 存放目录，在./Admin/Upload下，以日期来创建文件夹，如：./Admin/Upload/20170526
-  destination: (req, file, cb) => {
-    // 今天日期
-    let date = utils.formatDateToYMD(undefined, '');
-    let path = './Upload/' + date;
-
-    // 如果存在以今天日期命名的文件夹，则直接把图片存到该文件夹
-    if (utils.fsExistsSync(path)) {
-      cb(null, path);
-    } else {
-      // 否则新建一个文件夹
-      fs.mkdir(path);
-    }
-  },
-  // 文件名：时间戳_文件名.后缀
-  filename: function (req, file, cb) {
-    // 分割之后的文件名数组
-    let originalnameArr = file.originalname.split('.');
-    // 文件名，'fruit.apple.jpg' -> 'fruit.apple'
-    let name = file.originalname.slice(0, file.originalname.lastIndexOf('.'));
-    // 文件的扩展名，'.jpg'
-    let extension = originalnameArr[originalnameArr.length - 1];
-    let fileName = `${new Date().getTime()}_${name}.${extension}`;
-    // 缩略图
-    let thumbName = `${new Date().getTime()}_${name}_small.${extension}`;
-    // 今天日期
-    let date = utils.formatDateToYMD(undefined, '');
-
-    fileList.push({
-      imgUrl: `${date}/${fileName}`,
-      thumbUrl: `${date}/${thumbName}`
-    });
-
-    // fs.readFileSync(path.join(__dirname, fileName));
-    // fs.readFileSync('./Upload/' + date + '/' + fileName);
-
-    cb(null, fileName);
-  }
-});
+let storage = multer.memoryStorage();
+// let storage = multer.diskStorage({
+//   // 存放目录，在./Admin/Upload下，以日期来创建文件夹，如：./Admin/Upload/20170526
+//   destination: (req, file, cb) => {
+//     // 今天日期
+//     let date = utils.formatDateToYMD(undefined, '');
+//     let path = './Upload/' + date;
+//
+//     // 如果存在以今天日期命名的文件夹，则直接把图片存到该文件夹
+//     if (utils.fsExistsSync(path)) {
+//       cb(null, path);
+//     } else {
+//       // 否则新建一个文件夹
+//       fs.mkdir(path);
+//     }
+//   },
+//   // 文件名：时间戳_文件名.后缀。multer生成的文件默认没有后缀名，因此要手动配置
+//   filename: function (req, file, cb) {
+//     let {fileName, thumbName} = utils.generateUploadFileName(file.originalname);
+//     // 今天日期
+//     let date = utils.formatDateToYMD(undefined, '');
+//
+//     fileList.push({
+//       imgUrl: `${date}/${fileName}`,
+//       thumbUrl: `${date}/${thumbName}`
+//     });
+//
+//     cb(null, fileName);
+//   }
+// });
 
 // 上传文件的配置
 let uploadConfig = {
@@ -80,9 +70,10 @@ let uploadConfig = {
     let result = ~filter.indexOf(file.mimetype.split('/')[1]);
 
     // 如果图片类型在允许的列表中，则接收
-    if (result) {
+    if (!!result) {
       cb(null, true);
     } else {
+      // 否则，不接收，也不会报错
       cb(null, false);
     }
   }
@@ -96,13 +87,13 @@ router.route('/')
       .size(function (err, size) {
         if (!err)
           console.log(size.width);
-          console.log(size.width > size.height ? 'wider' : 'taller than you');
+        console.log(size.width > size.height ? 'wider' : 'taller than you');
       });
-      // .resize(240, 240)
-      // // .noProfile()
-      // .write('12345.jpg', function (err) {
-      //   if (!err) console.log('done');
-      // });
+    // .resize(240, 240)
+    // // .noProfile()
+    // .write('12345.jpg', function (err) {
+    //   if (!err) console.log('done');
+    // });
 
     res.send({
       result: '成功'
@@ -111,7 +102,6 @@ router.route('/')
   })
   .post((req, res) => {
     upload(req, res, (err) => {
-      console.log(req.files);
       if (err) {
         let error = {
           code: err.code,
@@ -126,147 +116,54 @@ router.route('/')
           error: error
         });
       }
+      // console.log('+++++++++++++++++++++');
+      // console.log(req.files);
+      req.files.forEach((file) => {
+        // 文件名：时间戳_文件名.后缀。multer生成的文件默认没有后缀名，因此要手动配置
+        let {fileName, thumbName} = utils.generateUploadFileName(file.originalname);
+        // 今天日期
+        let date = utils.formatDateToYMD(undefined, '');
+        let imgUrl = `${date}/${fileName}`;
+        let thumbUrl = `${date}/${thumbName}`;
+
+        fileList.push({
+          imgUrl: imgUrl,
+          thumbUrl: thumbUrl
+        });
+
+        gm(file.buffer)
+          .size((err, size) => {
+            console.log('--------------------');
+            console.log(size);
+          })
+          .thumb(240, 240, './Upload/' + thumbUrl, 80, (err)=>{
+            console.log(err);
+          })
+          .write('./Upload/' + imgUrl, (err) => {
+            console.log(err);
+          });
+      });
+      // console.log(utils.fsExistsSync('./Upload/' + date + '/' + fileName));
+
+      // gm('./Upload/' + date + '/' + fileName)
+      //   .size(function (err, size) {
+      //     console.log(err);
+      //     if (!err)
+      //       console.log(size.width);
+      //     console.log(size.width > size.height ? 'wider' : 'taller than you');
+      //   })
+      //   .write('./Upload/' + fileName, (err) => {
+      //     console.log(err);
+      //   });
+
       res.send({
         result: fileList,
         error: null
       });
+      // 清空上传文件地址列表
       fileList = [];
     });
   });
-
-// console.log(req.url);
-// var form = new formidable.IncomingForm();
-// form.uploadDir = './Admin/Public/images';
-// form.keepExtensions = true;
-// // form.maxFieldsSize = 0.5 * 1024 * 1024;
-// form.multiples = true;
-// form.on('progress', function(bytesReceived, bytesExpected) {
-//   console.log('bytesReceived:' + bytesReceived);
-//   console.log('bytesExpected:' + bytesExpected);
-// });
-//
-// let files = [];
-//
-// form
-//   .on('field', (name, value) => {
-//     console.log('------');
-//     console.log(value);
-//   })
-//   .on('fileBegin', (name, file) => {
-//     console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
-//     files.push(file);
-//     console.log(file);
-//   })
-//   .on('file', (name, file) => {
-//     console.log('------');
-//     files.push(file);
-//     console.log(file);
-//   })
-//   .on('end', () => {
-//     console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
-//
-//     res.send({
-//       result: files
-//     });
-//   })
-//   .on('error', (err) => {
-//     console.log('xxxxxxxxxxxxx');
-//     console.log(err);
-//     // res.send({
-//     //   result: null,
-//     //   error: err
-//     // })
-//   });
-//
-// form.parse(req);
-// let testSchema = Schema({
-//   name: {
-//     type: String,
-//     required: [true, '请输入名称']
-//   }
-// });
-//
-// let Test = mongoose.model('test', testSchema);
-//
-// router.route('/')
-//   .post((req, res) => {
-//     console.log('------');
-//     console.log(req.body);
-//
-//     let test = new Test(req.body);
-//     console.log('```````');
-//
-//     test.save((err) => {
-//       if(err){
-//         return console.log(err);
-//       }
-//
-//       console.log('*********');
-//       console.log('test');
-//       res.send({
-//         msg: '新增成功'
-//       });
-//     });
-//   });
-
-// let breakfastSchema = Schema({
-//   eggs: {
-//     type: Number,
-//     min: [6, 'Too few eggs'],
-//     max: 12
-//   },
-//   bacon: {
-//     type: Number,
-//     required: [true, 'Why no bacon?']
-//   },
-//   drink: {
-//     type: String,
-//     enum: ['Coffee', 'Tea'],
-//     required: function() {
-//       return this.bacon > 3;
-//     }
-//   }
-// });
-//
-// var Breakfast = mongoose.model('Breakfast', breakfastSchema);
-//
-// router.route('/')
-//   .post((req, res) => {
-//     console.log('------');
-//     console.log(req.body);
-//
-//     var badBreakfast = new Breakfast({
-//       eggs: 2,
-//       bacon: 0,
-//       drink: 'Milk'
-//     });
-//
-//     var error = badBreakfast.validateSync();
-//
-//     console.log(assert.equal(error.errors['eggs'].message,
-//       'Too few eggs'));
-//
-//     console.log(assert.ok(!error.errors['bacon']));
-//
-//     console.log(assert.equal(error.errors['drink'].message,
-//       '`Milk` is not a valid enum value for path `drink`.'));
-//
-//     console.log('```````');
-//     res.send({
-//       msg: '新增成功'
-//     });
-//     // test.save((err) => {
-//     //   if(err){
-//     //     return console.log(err);
-//     //   }
-//     //
-//     //   console.log('*********');
-//     //   console.log('test');
-//     //   res.send({
-//     //     msg: '新增成功'
-//     //   });
-//     // });
-//   });
 
 module.exports = router;
 
