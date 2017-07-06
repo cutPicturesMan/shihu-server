@@ -23,35 +23,6 @@ const errorMessages = {
 };
 
 let storage = multer.memoryStorage();
-// let storage = multer.diskStorage({
-//   // 存放目录，在./Admin/Upload下，以日期来创建文件夹，如：./Admin/Upload/20170526
-//   destination: (req, file, cb) => {
-//     // 今天日期
-//     let date = utils.formatDateToYMD(undefined, '');
-//     let path = './Upload/' + date;
-//
-//     // 如果存在以今天日期命名的文件夹，则直接把图片存到该文件夹
-//     if (utils.fsExistsSync(path)) {
-//       cb(null, path);
-//     } else {
-//       // 否则新建一个文件夹
-//       fs.mkdir(path);
-//     }
-//   },
-//   // 文件名：时间戳_文件名.后缀。multer生成的文件默认没有后缀名，因此要手动配置
-//   filename: function (req, file, cb) {
-//     let {fileName, thumbName} = utils.generateUploadFileName(file.originalname);
-//     // 今天日期
-//     let date = utils.formatDateToYMD(undefined, '');
-//
-//     fileList.push({
-//       imgUrl: `${date}/${fileName}`,
-//       thumbUrl: `${date}/${thumbName}`
-//     });
-//
-//     cb(null, fileName);
-//   }
-// });
 
 // 上传文件的配置
 let uploadConfig = {
@@ -124,19 +95,16 @@ router.route('/')
           thumbUrl: thumbUrl
         });
 
-        gm(file.buffer, './logo.png')
-          .size((err, size) => {
-            console.log('--------------------');
-            // console.log(fs.readFileSync(imgUrl));
-            console.log(size);
-          })
-          // 调整图片尺寸
-          .resize(640, 640)
+        // 缩略图
+        gm(file.buffer)
+          .thumb(140, 140, './Upload/' + thumbUrl, 100, 'center');
 
-          // 缩略图
-          .thumb(140, 140, './Upload/' + thumbUrl, 100, (err)=>{
-            console.log(err);
-          })
+        // 为大图添加水印
+        gm(file.buffer)
+          .composite('./logo.png')
+          .gravity('SouthEast')
+          .dissolve(50)
+          .geometry(640, 640)
           .write('./Upload/' + imgUrl, (err) => {
             console.log(err);
           });
