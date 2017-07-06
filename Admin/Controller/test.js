@@ -16,7 +16,7 @@ const errorMessages = {
   'LIMIT_PART_COUNT': '上传字段和上传文件的总和超出限制',
   'LIMIT_FILE_SIZE': '上传文件大小超过限制',
   'LIMIT_FILE_COUNT': '上传文件数量超过限制',
-  'LIMIT_UNEXPECTED_FILE': '上传文件的字段名称未填写',
+  'LIMIT_UNEXPECTED_FILE': '上传文件的字段名称请填写ImgList',
   'LIMIT_FIELD_KEY': '上传字段名称过长',
   'LIMIT_FIELD_VALUE': '上传字段值过长',
   'LIMIT_FIELD_COUNT': '上传字段数量超过限制'
@@ -58,8 +58,8 @@ let uploadConfig = {
   // 存储设置
   storage: storage,
   limits: {
-    // 每个文件大小限制为2M
-    fileSize: (2 * 1024 * 1024),
+    // 每个文件大小限制为5M
+    fileSize: (5 * 1024 * 1024),
     // 最大上传8张
     files: 8
   },
@@ -82,24 +82,6 @@ let uploadConfig = {
 let upload = multer(uploadConfig).array('ImgList', 12);
 
 router.route('/')
-  .get((req, res) => {
-    gm('./Upload/20170704/1.jpg')
-      .size(function (err, size) {
-        if (!err)
-          console.log(size.width);
-        console.log(size.width > size.height ? 'wider' : 'taller than you');
-      });
-    // .resize(240, 240)
-    // // .noProfile()
-    // .write('12345.jpg', function (err) {
-    //   if (!err) console.log('done');
-    // });
-
-    res.send({
-      result: '成功'
-    });
-    console.log('````````');
-  })
   .post((req, res) => {
     upload(req, res, (err) => {
       if (err) {
@@ -116,50 +98,55 @@ router.route('/')
           error: error
         });
       }
-      // console.log('+++++++++++++++++++++');
-      // console.log(req.files);
+
+      // 今天日期
+      let date = utils.formatDateToYMD(undefined, '');
+      // 如果不存在Upload文件夹，则创建一个
+      if (!utils.fsExistsSync('./Upload')) {
+        fs.mkdir('./Upload');
+      }
+      // 如果Upload文件夹下不存在今天日期命名的文件夹，则创建一个
+      if (!utils.fsExistsSync('./Upload/' + date)) {
+        fs.mkdir('./Upload/' + date);
+      }
+
+      // 循环内存中的文件列表，将每个文件以及对应的缩略图存储到硬盘上
       req.files.forEach((file) => {
         // 文件名：时间戳_文件名.后缀。multer生成的文件默认没有后缀名，因此要手动配置
         let {fileName, thumbName} = utils.generateUploadFileName(file.originalname);
-        // 今天日期
-        let date = utils.formatDateToYMD(undefined, '');
+
         let imgUrl = `${date}/${fileName}`;
         let thumbUrl = `${date}/${thumbName}`;
 
+        // 最终返回的文件地址列表
         fileList.push({
           imgUrl: imgUrl,
           thumbUrl: thumbUrl
         });
 
-        gm(file.buffer)
+        gm(file.buffer, './logo.png')
           .size((err, size) => {
             console.log('--------------------');
+            // console.log(fs.readFileSync(imgUrl));
             console.log(size);
           })
-          .thumb(240, 240, './Upload/' + thumbUrl, 80, (err)=>{
+          // 调整图片尺寸
+          .resize(640, 640)
+
+          // 缩略图
+          .thumb(140, 140, './Upload/' + thumbUrl, 100, (err)=>{
             console.log(err);
           })
           .write('./Upload/' + imgUrl, (err) => {
             console.log(err);
           });
       });
-      // console.log(utils.fsExistsSync('./Upload/' + date + '/' + fileName));
-
-      // gm('./Upload/' + date + '/' + fileName)
-      //   .size(function (err, size) {
-      //     console.log(err);
-      //     if (!err)
-      //       console.log(size.width);
-      //     console.log(size.width > size.height ? 'wider' : 'taller than you');
-      //   })
-      //   .write('./Upload/' + fileName, (err) => {
-      //     console.log(err);
-      //   });
 
       res.send({
         result: fileList,
         error: null
       });
+
       // 清空上传文件地址列表
       fileList = [];
     });
