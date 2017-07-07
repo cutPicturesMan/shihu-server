@@ -8,7 +8,7 @@
 
 [菜品Api](./doc/food.md)
 
-[菜品分类Api](./doc/food_category.md)
+[餐厅食物分类Api](./doc/food_category.md)
 
 ### 2、后台接口
 
