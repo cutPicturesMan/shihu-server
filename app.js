@@ -3,6 +3,7 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
@@ -19,6 +20,7 @@ var users = require('./Admin/Routes/users');
 var AdminStore = require('./Admin/Controller/Store');
 var AdminStoreCategory = require('./Admin/Controller/StoreCategory');
 var Upload = require('./Admin/Controller/Upload');
+var Test = require('./Admin/Controller/test');
 
 var app = express();
 
@@ -33,6 +35,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+  secret: 'keyboard cat',
+  saveUninitialized: true,
+  resave: false,
+  cookie: {
+    // path: '/session',
+    maxAge: 20000
+  }
+}));
 // 文件上传目录
 app.use(express.static(path.join(__dirname, 'Upload')));
 
@@ -42,6 +53,7 @@ app.use('/users', users);
 app.use('/store', AdminStore);
 app.use('/store_category', AdminStoreCategory);
 app.use('/upload', Upload);
+app.use('/test', Test);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
