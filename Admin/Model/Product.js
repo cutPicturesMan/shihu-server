@@ -1,5 +1,5 @@
 let mongoose = require('mongoose');
-let StoreCategorySchema = require('../Schema/StoreCategory');
-let StoreCategory = mongoose.model('StoreCategory', StoreCategorySchema);
+let ProductSchema = require('../Schema/Product');
+let Product = mongoose.model('Product', ProductSchema);
 
-module.exports = StoreCategory;
+module.exports = Product;

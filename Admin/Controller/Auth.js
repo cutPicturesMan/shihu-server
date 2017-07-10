@@ -1,14 +1,14 @@
 let express = require('express');
 let app = express();
 
-// 登录
-app.post('login_in')
+// 获取列表权限
+app.get('getList')
   .then((req, res)=>{
 
   });
 
-// 登出
-app.post('login_out')
+// 修改权限列表
+app.post('modify')
   .then((req, res)=>{
 
   });

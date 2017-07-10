@@ -48,25 +48,37 @@ router.route('/')
   })
   // 新增
   .post((req, res) => {
-    let data = req.body;
+    var productService = new eleme.ProductService(rpcClient);
 
-    let category = new StoreCategory({
-      name: data.name
-    });
-
-    category.save((err) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
+    productService.createCategory(result.authorizedShops[0].id, "甜品", "香甜可口哟~")
+      .then(result => {
+        res.send({
+          code: 200,
+          result: result
         });
-      }
-
-      res.send({
-        result: 1,
-        msg: '新增成功'
-      });
-    });
+      })
+      .catch(error => {
+        console.warn(error)
+      })
+    // let data = req.body;
+    //
+    // let category = new StoreCategory({
+    //   name: data.name
+    // });
+    //
+    // category.save((err) => {
+    //   if (err) {
+    //     return res.send({
+    //       result: 0,
+    //       msg: err
+    //     });
+    //   }
+    //
+    //   res.send({
+    //     result: 1,
+    //     msg: '新增成功'
+    //   });
+    // });
   });
 
 // 每条商家分类
