@@ -117,19 +117,54 @@ router
 router.route('/:_id')
 // 修改
   .put((req, res) => {
-    Store.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      res.send({
-        result: 1,
-        msg: '操作成功，影响了' + result.nModified + '行'
-      });
-    });
+    var shopService = new eleme.ShopService(rpcClient);
+    shopService.updateShop(156715843, {
+      "addressText": "上海市长宁区龙溪路虹桥路1923号",
+      "geo": "111.223,22.233",
+      "agentFee": 3,
+      "closeDescription": "业务繁忙",
+      "deliverDescription": "超过5公里，100元起送",
+      "deliverGeoJson": "{\"type\":\"FeatureCollection\",\"features\":[{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[121.381303,31.243521],[121.380938,31.242778],[121.381679,31.243297],[121.381303,31.243521]]]},\"type\":\"Feature\",\"properties\":{\"area_agent_fee\":20,\"delivery_price\":10,\"manual_weight\":0,\"system_weight\":0,\"weight_type\":1}}]}",
+      "description": "便宜好吃的小食",
+      "name": "烤鸭大王",
+      "isBookable": 1,
+      "openTime": "10:00-13:00,18:00-21:00",
+      "phone": "18516307705,13482893679",
+      "promotionInfo": "本周全场半价",
+      "logoImageHash": "3077080f760e7bf0fc985e23dd3e36e2",
+      "invoice": 1,
+      "invoiceMinAmount": 100,
+      "noAgentFeeTotal": 20,
+      "isOpen": 1,
+      "packingFee": 2,
+      "openId": "2132123213123"
+    })
+      .then(result => {
+        console.log(result)
+      })
+      .catch(error => {
+        console.warn(error)
+      })
+    shopService.getShop(result.authorizedShops[0].id)
+      .then(result => {
+        console.log(result)
+      })
+      .catch(error => {
+        console.warn(error)
+      })
+    // Store.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
+    //   if (err) {
+    //     return res.send({
+    //       result: 0,
+    //       msg: err
+    //     });
+    //   }
+    //
+    //   res.send({
+    //     result: 1,
+    //     msg: '操作成功，影响了' + result.nModified + '行'
+    //   });
+    // });
   })
   // 删除
   .delete((req, res) => {

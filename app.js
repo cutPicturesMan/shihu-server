@@ -19,8 +19,10 @@ var index = require('./Admin/Routes/index');
 var users = require('./Admin/Routes/users');
 var AdminStore = require('./Admin/Controller/Store');
 var AdminStoreCategory = require('./Admin/Controller/StoreCategory');
+var AdminProduct = require('./Admin/Controller/Product');
+var Login = require('./Admin/Controller/Login');
 var Upload = require('./Admin/Controller/Upload');
-var Test = require('./Admin/Controller/test');
+var Test = require('./Admin/Controller/Test');
 
 var app = express();
 
@@ -52,7 +54,9 @@ app.use('/users', users);
 
 app.use('/store', AdminStore);
 app.use('/store_category', AdminStoreCategory);
+app.use('/product', AdminProduct);
 app.use('/upload', Upload);
+app.use('/login', Login);
 app.use('/test', Test);
 
 // catch 404 and forward to error handler

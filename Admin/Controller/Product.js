@@ -1,40 +1,10 @@
-let StoreCategory = require('../Model/StoreCategory');
+let Product = require('../Model/Product');
 
 let express = require('express');
-let router = express.Router();
+let app = express();
 
-// 查询商家分类名是否唯一
-router.route('/check_name')
-  .post((req, res) => {
-    let data = req.body;
-
-    StoreCategory.findOne({name: data.name}, (err, category) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      // 如果有查询到相同的商家分类名称，则返回错误提示
-      if (category) {
-        res.send({
-          result: 0,
-          msg: '商家分类名称重复'
-        });
-      } else {
-        res.send({
-          result: 1,
-          msg: '商家分类名称可以使用'
-        });
-      }
-    });
-  });
-
-// 商家分类
-router.route('/')
-  // 查询
-  .get((req, res) => {
+// 商品列表
+app.get((req, res) => {
     StoreCategory.find({}, (err, categories) => {
       if (err) {
         return res.send({
@@ -46,62 +16,43 @@ router.route('/')
       res.send(categories);
     });
   })
-  // 新增
-  .post((req, res) => {
-    let data = req.body;
 
-    let category = new StoreCategory({
-      name: data.name
-    });
-
-    category.save((err) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      res.send({
-        result: 1,
-        msg: '新增成功'
-      });
-    });
+// 新增
+app.post((req, res) => {
+    productService.getShopCategories(result.authorizedShops[0].id)
+      .then(result => {
+        console.log(result[1].id);
+        productService.createItem(526391258, {
+          "name": "白切鸡3",
+          "description": "香脆可口，外焦里嫩",
+          "specs": [
+            {
+              "specId": 72970000222,
+              "name": "大份",
+              "price": 18,
+              "stock": 9000,
+              "maxStock": 10000,
+              "packingFee": 1,
+              "onShelf": 1,
+              "extendCode": "1234567893",
+              "barCode": "X148948686356666",
+              "weight": 123,
+              "activityLevel": 1
+            }
+          ]
+        })
+          .then(result => {
+            console.log(result)
+            res.send(result);
+          })
+          .catch(error => {
+            console.warn(error)
+          })
+        console.log(result)
+      })
+      .catch(error => {
+        console.warn(error)
+      })
   });
 
-// 每条商家分类
-router.route('/:_id')
-  // 修改
-  .put((req, res) => {
-    StoreCategory.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      res.send({
-        result: 1,
-        msg: '操作成功，影响了' + result.nModified + '行'
-      });
-    });
-  })
-  // 删除
-  .delete((req, res) => {
-    StoreCategory.remove({_id: req.params._id}, (err, result) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      res.send({
-        result: 1,
-        msg: '操作成功，影响了' + result.result.n + '行'
-      });
-    });
-  });
-
-module.exports = router;
+module.exports = app;
