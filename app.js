@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
@@ -38,13 +39,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
+  store: new FileStore,
   secret: 'keyboard cat',
   saveUninitialized: true,
-  resave: false,
-  cookie: {
-    // path: '/session',
-    maxAge: 20000
-  }
+  resave: true
 }));
 // 文件上传目录
 app.use(express.static(path.join(__dirname, 'Upload')));
