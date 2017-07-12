@@ -1,4 +1,5 @@
 ## RESTFUL API
+新增和修改，均采用json格式提交，`Content-Type`设置为`application/json`；上传图片时，采用文件上传方式，`Content-Type`设置为`multipart/form-data`
 
 ### 1、公共接口
 

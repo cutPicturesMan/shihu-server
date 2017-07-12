@@ -1,4 +1,4 @@
-let Store = require('../Model/Store');
+let Store = require('../Model/Shop');
 let utils = require('../Public/javascripts/utils');
 let express = require('express');
 let router = express.Router();

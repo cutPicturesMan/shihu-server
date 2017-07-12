@@ -4,8 +4,6 @@ let utils = require('../Public/javascripts/utils');
 
 let Product = require('../Model/Product');
 
-
-
 let {
   eleme,
   config,
@@ -148,38 +146,93 @@ app.get('/update', (req, res) => {
     });
 });
 
+// 新增商品
 app.post('/create', (req, res) => {
-  console.log(req.body);
-{
-  "name": "鸡腿",
-  "description": "美味可口",
-  "imageUrl": "img",
-  "sku": [{
-    "name": "大份",
-    "price": 18,
-    "stock": 3,
-    "discount": 95
-  }, {
-    "name": "小份",
-    "price": 12,
-    "stock": 5,
-    "discount": 85
-  }]
-}
   let collection = new Product(req.body);
 
-  collection.save((err, data) => {
-    if(err){
+  // 验证参数是否正确
+  collection.validate((err) => {
+    if (err) {
       return res.send({
         result: null,
-        error: utils.validateErrors(err)
+        error: utils.validateErrors(err)[0]
       });
     }
 
-    res.send({
-      result: data,
-      error: null
+    // 查询商品名称是否重复
+    Product.findOne({name: req.body.name}, (err, product) => {
+      if(product){
+        return res.send({
+          result: null,
+          error: {
+            message: "商品名称重复"
+          }
+        });
+      }
+
+      // 保存商品
+      collection.save((err, data) => {
+        if (err) {
+          return res.send({
+            result: null,
+            error: {
+              message: err
+            }
+          });
+        }
+
+        // 返回数据
+        res.send({
+          result: data,
+          error: null
+        });
+      });
     });
+  });
+});
+
+// 修改商品
+app.post('/update', (req, res) => {
+  let collection = new Product(req.body);
+
+  // 验证参数是否正确
+  collection.validate((err) => {
+    if (err) {
+      return res.send({
+        result: null,
+        error: utils.validateErrors(err)[0]
+      });
+    }
+
+    // 查询商品名称是否重复
+    // Product.findOne({name: req.body.name}, (err, product) => {
+    //   if(product){
+    //     return res.send({
+    //       result: null,
+    //       error: {
+    //         message: "商品名称重复"
+    //       }
+    //     });
+    //   }
+    //
+    //   // 保存商品
+    //   collection.save((err, data) => {
+    //     if (err) {
+    //       return res.send({
+    //         result: null,
+    //         error: {
+    //           message: err
+    //         }
+    //       });
+    //     }
+    //
+    //     // 返回数据
+    //     res.send({
+    //       result: data,
+    //       error: null
+    //     });
+    //   });
+    // });
   });
 });
 

@@ -18,8 +18,8 @@ db.once('open', function(){
 
 var index = require('./Admin/Routes/index');
 var users = require('./Admin/Routes/users');
-var AdminStore = require('./Admin/Controller/Store');
-var AdminStoreCategory = require('./Admin/Controller/StoreCategory');
+var AdminShop = require('./Admin/Controller/Shop');
+var AdminShopCategory = require('./Admin/Controller/ShopCategory');
 var AdminProduct = require('./Admin/Controller/Product');
 var Login = require('./Admin/Controller/Login');
 var Upload = require('./Admin/Controller/Upload');
@@ -50,8 +50,8 @@ app.use(express.static(path.join(__dirname, 'Upload')));
 app.use('/', index);
 app.use('/users', users);
 
-app.use('/store', AdminStore);
-app.use('/store_category', AdminStoreCategory);
+app.use('/shop', AdminShop);
+app.use('/shop_category', AdminShopCategory);
 app.use('/product', AdminProduct);
 app.use('/upload', Upload);
 app.use('/login', Login);

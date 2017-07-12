@@ -6,7 +6,7 @@ let SkuSchema = Schema({
   skuId: Schema.Types.ObjectId,
   name: {
     type: String,
-      required: [true, '请填写商品的规格名称']
+    required: [true, '请填写商品的规格名称']
   },
   price: {
     type: Number,
@@ -29,12 +29,19 @@ let ProductSchema = Schema({
   // 商品名称
   name: {
     type: String,
+    unique: true,
     required: [true, '请填写商品名称']
   },
   // 商品描述
-  description: String,
+  description: {
+    type: String,
+    default: ''
+  },
   // 商品图片
-  imageUrl: String,
+  imageUrl: {
+    type: String,
+    default: ''
+  },
   // 商品规格
   sku: {
     type: [SkuSchema],
