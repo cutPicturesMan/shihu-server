@@ -150,7 +150,22 @@ app.get('/update', (req, res) => {
 
 app.post('/create', (req, res) => {
   console.log(req.body);
-
+{
+  "name": "鸡腿",
+  "description": "美味可口",
+  "imageUrl": "img",
+  "sku": [{
+    "name": "大份",
+    "price": 18,
+    "stock": 3,
+    "discount": 95
+  }, {
+    "name": "小份",
+    "price": 12,
+    "stock": 5,
+    "discount": 85
+  }]
+}
   let collection = new Product(req.body);
 
   collection.save((err, data) => {
