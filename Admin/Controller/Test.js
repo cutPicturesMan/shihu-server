@@ -1,16 +1,14 @@
 let express = require('express');
-let url = require('url');
-let session = require('express-session');
 let router = express.Router();
+let Test = require('../Model/Test');
 
 router.route('/')
   .get((req, res) => {
-    // console.log(query);
-    // console.log(url.format(req.query));
-    res.redirect('login/login_in' + req.url.slice(1, -1));
-    // console.log('您的session为：');
-    // console.log(req.session);
-    // res.send(req.session);
+    var opts = { runValidators: true };
+    Test.update({}, { color: 'bacon' }, opts, function (err) {
+      console.log(err);
+        res.send(err);
+    });
   });
 
 module.exports = router;

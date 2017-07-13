@@ -176,7 +176,8 @@ app.post('/create', (req, res) => {
           return res.send({
             result: null,
             error: {
-              message: err
+              code: err.code,
+              message: err.errmsg
             }
           });
         }

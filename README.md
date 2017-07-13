@@ -3,9 +3,9 @@
 
 ### 1、公共接口
 
-[商家Api](./doc/store.md)
+[商家Api](doc/shop.md)
 
-[商家分类Api](./doc/store_category.md)
+[商家分类Api](./doc/shop_category.md)
 
 [菜品Api](./doc/food.md)
 

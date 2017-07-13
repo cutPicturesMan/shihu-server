@@ -1,4 +1,4 @@
-let Store = require('../Model/Shop');
+let Shop = require('../Model/Shop');
 let utils = require('../Public/javascripts/utils');
 let express = require('express');
 let router = express.Router();
@@ -7,7 +7,7 @@ let assert = require('assert');
 router.route('/')
 // 查询商家列表
   .get((req, res) => {
-    Store.find({}, (err, stores) => {
+    Shop.find({}, (err, shop) => {
       if (err) {
         return res.send({
           result: 0,
@@ -15,22 +15,24 @@ router.route('/')
         });
       }
 
-      res.send(stores);
+      res.send(shop);
     });
   })
   // 新增商家
   .post((req, res) => {
-    let store = new Store(req.body);
+    let collection = new Shop(req.body);
 
-    let error = store.validateSync();
-    if (error) {
+    // 验证参数是否正确
+    let err = collection.validateSync();
+    if (err) {
       return res.send({
         result: null,
-        error: utils.validateErrors(error)
+        error: utils.validateErrors(err)[0]
       });
     }
 
-    Store.findOne({name: store.name}, (err, data) => {
+    // 查找餐厅名称是否重复
+    Shop.findOne({name: collection.name}, (err, shop) => {
       if (err) {
         return res.send({
           result: null,
@@ -41,15 +43,17 @@ router.route('/')
         });
       }
 
-      if(data){
+      // 如果餐厅名称重复
+      if (shop) {
         res.send({
           result: null,
           error: {
             message: '餐厅名称重复'
           }
         });
-      }else{
-        store.save((err) => {
+      } else {
+        // 餐厅名称没有重复就入库
+        collection.save((err, data) => {
           if (err) {
             return res.send({
               result: null,
@@ -61,53 +65,9 @@ router.route('/')
           }
 
           res.send({
-            result: store,
+            result: data,
             error: null
           });
-        });
-      }
-    });
-  });
-
-router.route('/:id')
-  .get((req, res) => {
-    console.log(1);
-    res.send({
-      title: 'id'
-    });
-  });
-
-router.route('/aaa')
-  .get((req, res) => {
-    console.log(2);
-    res.send({
-      title: 'zz'
-    });
-  });
-
-// 查询商家名是否唯一
-router
-  .post('/check_name', (req, res) => {
-    let data = req.body;
-
-    Store.findOne({name: data.name}, (err, store) => {
-      if (err) {
-        return res.send({
-          result: 0,
-          msg: err
-        });
-      }
-
-      // 如果有查询到相同的商家分类名称，则返回错误提示
-      if (store) {
-        res.send({
-          result: 0,
-          msg: '商家名称重复'
-        });
-      } else {
-        res.send({
-          result: 1,
-          msg: '该商家名称可以使用'
         });
       }
     });
@@ -117,68 +77,63 @@ router
 router.route('/:_id')
 // 修改
   .put((req, res) => {
-    var shopService = new eleme.ShopService(rpcClient);
-    shopService.updateShop(156715843, {
-      "addressText": "上海市长宁区龙溪路虹桥路1923号",
-      "geo": "111.223,22.233",
-      "agentFee": 3,
-      "closeDescription": "业务繁忙",
-      "deliverDescription": "超过5公里，100元起送",
-      "deliverGeoJson": "{\"type\":\"FeatureCollection\",\"features\":[{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[121.381303,31.243521],[121.380938,31.242778],[121.381679,31.243297],[121.381303,31.243521]]]},\"type\":\"Feature\",\"properties\":{\"area_agent_fee\":20,\"delivery_price\":10,\"manual_weight\":0,\"system_weight\":0,\"weight_type\":1}}]}",
-      "description": "便宜好吃的小食",
-      "name": "烤鸭大王",
-      "isBookable": 1,
-      "openTime": "10:00-13:00,18:00-21:00",
-      "phone": "18516307705,13482893679",
-      "promotionInfo": "本周全场半价",
-      "logoImageHash": "3077080f760e7bf0fc985e23dd3e36e2",
-      "invoice": 1,
-      "invoiceMinAmount": 100,
-      "noAgentFeeTotal": 20,
-      "isOpen": 1,
-      "packingFee": 2,
-      "openId": "2132123213123"
-    })
-      .then(result => {
-        console.log(result)
-      })
-      .catch(error => {
-        console.warn(error)
-      })
-    shopService.getShop(result.authorizedShops[0].id)
-      .then(result => {
-        console.log(result)
-      })
-      .catch(error => {
-        console.warn(error)
-      })
-    // Store.update({_id: req.params._id}, {name: req.body.name}, (err, result) => {
-    //   if (err) {
-    //     return res.send({
-    //       result: 0,
-    //       msg: err
-    //     });
-    //   }
-    //
-    //   res.send({
-    //     result: 1,
-    //     msg: '操作成功，影响了' + result.nModified + '行'
-    //   });
-    // });
+    Shop.findByIdAndUpdate(req.params._id, {$set: req.body}, {new: true, runValidators: true}, (err, result) => {
+      if (err) {
+        // 如果是商家参数校验错误
+        if (err.errors) {
+          return res.send({
+            result: null,
+            error: utils.validateErrors(err)[0]
+          });
+        } else if (err.code) {
+          // 如果是商家名称重复等非validate错误
+          let code = err.code;
+          let msg = err.errmsg;
+
+          if (code === 11000) {
+            msg = '商家名称重复';
+          }
+
+          return res.send({
+            result: null,
+            error: {
+              code: code,
+              message: msg
+            }
+          });
+        }
+      }
+
+      // 找不到指定_id的记录
+      if (!result) {
+        return res.send({
+          result: null,
+          error: {
+            message: '修改失败，未找到该记录'
+          }
+        });
+      }
+
+      // 成功，返回修改后的记录
+      res.send({
+        result: result,
+        error: null
+      });
+    });
   })
   // 删除
   .delete((req, res) => {
-    Store.remove({_id: req.params._id}, (err, result) => {
+    Shop.remove({_id: req.params._id}, (err, result) => {
       if (err) {
         return res.send({
-          result: 0,
-          msg: err
+          result: null,
+          error: err
         });
       }
 
       res.send({
-        result: 1,
-        msg: '操作成功，影响了' + result.result.n + '行'
+        result: result,
+        error: null
       });
     });
   });

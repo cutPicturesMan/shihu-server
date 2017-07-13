@@ -1,5 +1,5 @@
 let mongoose = require('mongoose');
-let StoreSchema = require('../Schema/Shop');
-let Store = mongoose.model('Store', StoreSchema);
+let ShopSchema = require('../Schema/Shop');
+let Shop = mongoose.model('Shop', ShopSchema);
 
-module.exports = Store;
+module.exports = Shop;
