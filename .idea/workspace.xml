@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fb4228da-3c4a-4cd4-8894-1d4a285e5273" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sessions/SZ8rvOqclHVOGpt1CZcr3mW5zKkahoPg.json" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Admin/Controller/Product.js" afterPath="$PROJECT_DIR$/Admin/Controller/Product.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Admin/Controller/Shop.js" afterPath="$PROJECT_DIR$/Admin/Controller/Shop.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Admin/Controller/Test.js" afterPath="$PROJECT_DIR$/Admin/Controller/Test.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Admin/Model/Shop.js" afterPath="$PROJECT_DIR$/Admin/Model/Shop.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Admin/Schema/Shop.js" afterPath="$PROJECT_DIR$/Admin/Schema/Shop.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/doc/store.md" afterPath="$PROJECT_DIR$/doc/shop.md" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/doc/store_category.md" afterPath="$PROJECT_DIR$/doc/shop_category.md" />
-    </list>
+    <list default="true" id="fb4228da-3c4a-4cd4-8894-1d4a285e5273" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -52,7 +41,7 @@
           <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
             <state split_layout="SPLIT">
               <first_editor relative-caret-position="264">
-                <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+                <caret line="23" column="17" lean-forward="false" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
                 <folding />
               </first_editor>
               <second_editor>
@@ -466,12 +455,12 @@
       <workItem from="1499764510247" duration="40000" />
       <workItem from="1499821004951" duration="18086000" />
       <workItem from="1499909980991" duration="15972000" />
-      <workItem from="1499935501585" duration="2857000" />
+      <workItem from="1499935501585" duration="3455000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="118183000" />
+    <option name="totallyTimeSpent" value="118781000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="0" />
@@ -728,7 +717,7 @@
       <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="264">
-            <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+            <caret line="23" column="17" lean-forward="false" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
             <folding />
           </first_editor>
           <second_editor>
