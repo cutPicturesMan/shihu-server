@@ -22,6 +22,8 @@ let SkuSchema = Schema({
     type: Number,
     default: 100
   }
+}, {
+  _id: false
 });
 
 // 商品
@@ -32,6 +34,16 @@ let ProductSchema = Schema({
     unique: true,
     required: [true, '请填写商品名称']
   },
+  // 店铺
+  shopId: {
+    type: Schema.Types.ObjectId,
+    required: [true, '请填写商品所属的店铺id']
+  },
+  // // 分类Id
+  // categoryId: {
+  //   type: Schema.Types.ObjectId,
+  //   required: [true, '请填写商品所属的分类id']
+  // },
   // 商品描述
   description: {
     type: String,

@@ -111,6 +111,9 @@ let ShopSchema = Schema({
   agentFee: {
     type: Number,
     default: 0
+  },
+  foods: {
+    
   }
 }, {
   timestamps: true

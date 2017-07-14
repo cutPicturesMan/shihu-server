@@ -5,33 +5,57 @@ let router = express.Router();
 let assert = require('assert');
 
 router.route('/')
-  // 查询商家列表
+// 查询商家列表
   .get((req, res) => {
-    console.log();
-    Shop.findOne({name: '麦当劳'}, 'name servingTime', (err, shop) => {
-      // 查询出错
-      if(err){
-        return res.send({
-          result: null,
-          error: err
-        });
-      }
+    let {
+      name = '',
+      sort = 'createAt',
+      order = -1,
+      page,
+      limit
+    } = req.query;
 
-      // 没找到符合关键字的店铺
-      if(!shop){
-        return res.send({
-          result: null,
-          error: {
-            message: '无符合条件的店铺'
-          }
-        });
-      }
+    // 页码，默认第一页
+    page = parseInt(page) || 1;
+    // 每页显示多少条，默认10条
+    limit = parseInt(limit) || 10;
+    // 排序，-1为倒叙desc，1为正序asc
+    let sortObj = {};
+    sortObj[sort] = order;
 
-      res.send({
-        result: shop,
-        error: null
+    console.log(sortObj);
+    let skip = (page - 1) * limit;
+
+    Shop.find({
+      name: new RegExp(name)
+    })
+      .limit(limit)
+      .skip(skip)
+      .sort(sortObj)
+      .exec((err, shop) => {
+        // 查询出错
+        if (err) {
+          return res.send({
+            result: null,
+            error: err
+          });
+        }
+
+        // 没找到符合关键字的店铺
+        if (!shop) {
+          return res.send({
+            result: null,
+            error: {
+              message: '无符合条件的店铺'
+            }
+          });
+        }
+
+        res.send({
+          result: shop,
+          error: null
+        });
       });
-    });
   })
   // 新增商家
   .post((req, res) => {
@@ -89,19 +113,19 @@ router.route('/')
   });
 
 router.route('/:_id')
-  // 根据_id查询某个店铺
+// 根据_id查询某个店铺
   .get((req, res) => {
     Shop.findById(req.params._id, (err, shop) => {
       if (err) {
         // 传递非法_id
-        if(err.name === 'CastError'){
+        if (err.name === 'CastError') {
           return res.send({
             result: null,
             error: {
               message: '店铺_id格式错误'
             }
           });
-        }else{
+        } else {
           // 其它错误
           return res.send({
             result: null,
@@ -111,7 +135,7 @@ router.route('/:_id')
       }
 
       // 没有找到店铺
-      if(!shop){
+      if (!shop) {
         return res.send({
           result: null,
           error: {
