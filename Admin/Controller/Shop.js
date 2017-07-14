@@ -5,17 +5,32 @@ let router = express.Router();
 let assert = require('assert');
 
 router.route('/')
-// 查询商家列表
+  // 查询商家列表
   .get((req, res) => {
-    Shop.find({}, (err, shop) => {
-      if (err) {
+    console.log();
+    Shop.findOne({name: '麦当劳'}, 'name servingTime', (err, shop) => {
+      // 查询出错
+      if(err){
         return res.send({
-          result: 0,
+          result: null,
           error: err
         });
       }
 
-      res.send(shop);
+      // 没找到符合关键字的店铺
+      if(!shop){
+        return res.send({
+          result: null,
+          error: {
+            message: '无符合条件的店铺'
+          }
+        });
+      }
+
+      res.send({
+        result: shop,
+        error: null
+      });
     });
   })
   // 新增商家
@@ -73,9 +88,46 @@ router.route('/')
     });
   });
 
-// 每条商家分类
 router.route('/:_id')
-// 修改
+  // 根据_id查询某个店铺
+  .get((req, res) => {
+    Shop.findById(req.params._id, (err, shop) => {
+      if (err) {
+        // 传递非法_id
+        if(err.name === 'CastError'){
+          return res.send({
+            result: null,
+            error: {
+              message: '店铺_id格式错误'
+            }
+          });
+        }else{
+          // 其它错误
+          return res.send({
+            result: null,
+            error: err
+          });
+        }
+      }
+
+      // 没有找到店铺
+      if(!shop){
+        return res.send({
+          result: null,
+          error: {
+            message: '经查询无此店铺'
+          }
+        });
+      }
+
+      // 找到店铺
+      res.send({
+        result: shop,
+        error: null
+      });
+    });
+  })
+  // 修改
   .put((req, res) => {
     Shop.findByIdAndUpdate(req.params._id, {$set: req.body}, {new: true, runValidators: true}, (err, result) => {
       if (err) {

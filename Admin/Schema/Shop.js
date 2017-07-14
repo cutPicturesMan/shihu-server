@@ -60,6 +60,7 @@ let ShopSchema = Schema({
   // 营业时间
   servingTime: {
     type: [servingTimeSchema],
+    required: [true, '请至少选择一个营业时间段'],
     default: [{
       begin: "00:00",
       end: "23:55"
