@@ -1,21 +1,48 @@
 let fs = require('fs');
 
 const utils = {
-  // validate错误列表
-  validateErrors (error = {}) {
+  /**
+   * validate错误列表
+   * @param error
+   * @returns {Array}
+   */
+  validateErrors (err = {}) {
     // 错误对象
-    let errors = error.errors || {};
-    let errs = [];
+    let errors = err.errors || {};
+    let errArr = [];
 
     // 循环错误对象的键组成的数组
     Object.keys(errors).forEach((value) => {
-      errs.push({
-        code: errors[value].name,
-        message: errors[value].message
-      });
+      errArr.push(this.handleError(errors[value]));
     });
 
-    return errs;
+    return errArr;
+  },
+  /**
+   * 处理错误，可能的错误如下
+   * 1、字段类型出错
+   * 2、validate验证时出错，比如必须字段未填，邮箱不符合格式等...
+   * @param err
+   * @returns {
+   *    code: "CastError",
+   *    message: "错误信息"
+   * }
+   */
+  handleError (err) {
+    let error = null;
+
+    // 类型出错
+    if (err.name === 'CastError') {
+      error = {
+        code: err.name,
+        message: `字段${err.path}的数据类型出错，期待的数据类型为${err.kind}。传入的值为${err.value}`
+      }
+    } else {
+      // 其它错误
+      error = err;
+    }
+
+    return error;
   },
   //检测文件或者文件夹存在 nodeJS
   fsExistsSync (path) {
@@ -53,6 +80,7 @@ const utils = {
       thumbName: thumbName
     }
   },
+
   /**
    * 将时间戳格式化为时间 '2017-05-26 09:06:03'
    * @param date 日期，默认为今天

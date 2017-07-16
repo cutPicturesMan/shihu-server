@@ -1,4 +1,6 @@
 let Shop = require('../Model/Shop');
+let ProductCategory = require('../Model/ProductCategory');
+
 let utils = require('../Public/javascripts/utils');
 let express = require('express');
 let router = express.Router();
@@ -7,9 +9,10 @@ let assert = require('assert');
 router.route('/')
 // 查询商家列表
   .get((req, res) => {
+    // ?name="麦当劳"&sort="createAt"&order=-1&page=1&limit=10
     let {
       name = '',
-      sort = 'createAt',
+      sort = 'createdAt',
       order = -1,
       page,
       limit
@@ -21,14 +24,15 @@ router.route('/')
     limit = parseInt(limit) || 10;
     // 排序，-1为倒叙desc，1为正序asc
     let sortObj = {};
-    sortObj[sort] = order;
-
+    sortObj[sort] = parseInt(order) === 1 ? 'asc' : 'desc';
+    // sortObj[sort] = parseInt(order) === 1 ? 'asc' : 'desc';
     console.log(sortObj);
     let skip = (page - 1) * limit;
 
     Shop.find({
       name: new RegExp(name)
     })
+      // .populate('categories')
       .limit(limit)
       .skip(skip)
       .sort(sortObj)
@@ -51,10 +55,19 @@ router.route('/')
           });
         }
 
-        res.send({
-          result: shop,
-          error: null
+        ProductCategory.find({shopId: shop[1]._id}, (err, categories)=>{
+          shop[1].categories = categories;
+          console.log(categories);
+          res.send({
+            result: shop,
+            error: null
+          });
         });
+
+        // res.send({
+        //   result: shop,
+        //   error: null
+        // });
       });
   })
   // 新增商家
@@ -115,41 +128,43 @@ router.route('/')
 router.route('/:_id')
 // 根据_id查询某个店铺
   .get((req, res) => {
-    Shop.findById(req.params._id, (err, shop) => {
-      if (err) {
-        // 传递非法_id
-        if (err.name === 'CastError') {
+    Shop
+      .findById(req.params._id)
+      .exec((err, shop) => {
+        if (err) {
+          // 传递非法_id
+          if (err.name === 'CastError') {
+            return res.send({
+              result: null,
+              error: {
+                message: '店铺_id格式错误'
+              }
+            });
+          } else {
+            // 其它错误
+            return res.send({
+              result: null,
+              error: err
+            });
+          }
+        }
+
+        // 没有找到店铺
+        if (!shop) {
           return res.send({
             result: null,
             error: {
-              message: '店铺_id格式错误'
+              message: '经查询无此店铺'
             }
           });
-        } else {
-          // 其它错误
-          return res.send({
-            result: null,
-            error: err
-          });
         }
-      }
 
-      // 没有找到店铺
-      if (!shop) {
-        return res.send({
-          result: null,
-          error: {
-            message: '经查询无此店铺'
-          }
+        // 找到店铺
+        res.send({
+          result: shop,
+          error: null
         });
-      }
-
-      // 找到店铺
-      res.send({
-        result: shop,
-        error: null
       });
-    });
   })
   // 修改
   .put((req, res) => {
