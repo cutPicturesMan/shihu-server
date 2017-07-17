@@ -37,7 +37,9 @@ let ProductSchema = Schema({
   // 店铺
   shopId: {
     type: Schema.Types.ObjectId,
-    required: [true, '请填写商品所属的店铺id']
+    required: [true, '请填写商品所属的店铺id'],
+    // 所属店铺shopId的值必须存在于店铺Shop表中
+    ref: 'Shop'
   },
   // // 分类Id
   // categoryId: {

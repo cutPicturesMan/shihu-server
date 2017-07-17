@@ -25,6 +25,24 @@ let mongoose = require('mongoose');
 //     "agentFee": 5,
 //     "noAgentFeeTotal": 50
 // }
+
+// {
+//   "name": "苹果",
+//   "shopId": "59676d4b3773b024c4392499",
+//   "description": "甜脆爽口",
+//   "imageUrl": "img",
+//   "sku": [{
+//   "name": "水晶",
+//   "price": 3,
+//   "stock": 3,
+//   "discount": 100
+// }, {
+//   "name": "水晶",
+//   "price": 3,
+//   "stock": 3,
+//   "discount": 100
+// }]
+// }
 // 用户
 let TestSchema = mongoose.Schema({
   color: String,

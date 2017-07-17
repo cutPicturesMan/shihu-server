@@ -7,6 +7,8 @@ var session = require('express-session');
 var FileStore = require('session-file-store')(session);
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+// 使用es6原生Promise
+mongoose.Promise = global.Promise;
 
 mongoose.connect('mongodb://localhost:27017/shihu');
 
@@ -21,6 +23,7 @@ var users = require('./Admin/Routes/users');
 var AdminShop = require('./Admin/Controller/Shop');
 var AdminShopCategory = require('./Admin/Controller/ShopCategory');
 var AdminProduct = require('./Admin/Controller/Product');
+var AdminProductCategory = require('./Admin/Controller/ProductCategory');
 var Login = require('./Admin/Controller/Login');
 var Upload = require('./Admin/Controller/Upload');
 var Test = require('./Admin/Controller/Test');
@@ -53,6 +56,7 @@ app.use('/users', users);
 app.use('/shop', AdminShop);
 app.use('/shop_category', AdminShopCategory);
 app.use('/product', AdminProduct);
+app.use('/product_category', AdminProductCategory);
 app.use('/upload', Upload);
 app.use('/login', Login);
 app.use('/test', Test);
