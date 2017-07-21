@@ -36,7 +36,7 @@ const utils = {
       error = {
         code: err.name,
         message: `字段${err.path}的数据类型出错，期待的数据类型为${err.kind}。传入的值为${err.value}`
-      }
+      };
     } else {
       // 其它错误
       error = err;
@@ -44,11 +44,11 @@ const utils = {
 
     return error;
   },
-  //检测文件或者文件夹存在 nodeJS
+  //检测文件或者文件夹是否存在 nodeJS
   fsExistsSync (path) {
-    try{
+    try {
       fs.accessSync(path);
-    }catch(e){
+    } catch (e) {
       return false;
     }
     return true;
@@ -73,56 +73,36 @@ const utils = {
     // 文件名
     let fileName = `${new Date().getTime()}_${name}.${extension}`;
     // 缩略图
-    let thumbName = `${new Date().getTime()}_${name}_small.${extension}`;
+    let thumbName = `${new Date().getTime()}_${name}_thumb.${extension}`;
 
     return {
       fileName: fileName,
       thumbName: thumbName
-    }
+    };
   },
-
   /**
    * 将时间戳格式化为时间 '2017-05-26 09:06:03'
-   * @param date 日期，默认为今天
-   * @param space 日期和时间的分割符，默认为空格，'2017-05-26 09:06:03'
-   * @param dateSplit 日期分割符，'2017-05-26'，'2017_05_26'
-   * @param timeSplit 时间分割符，'09:06:03'，'09-06-03'
-   * @returns {string} '2017-05-26 09:06:03'
+   * @param time 日期，默认为今天
+   * @param format 格式化后的排版
+   * @returns {string}
    */
-  formatDate(date = new Date(), space = ' ', dateSplit = '-', timeSplit = ':'){
-    return `${this.formatDateToYMD(date, dateSplit)}${space}${this.formatDateToHMS(date, timeSplit)}`;
-  },
-  /**
-   * 将时间戳转为日期 '2017-05-26'
-   * @param date 日期，默认为今天
-   * @param line 日期分割符，'2017-05-26'，'2017_05_26'
-   * @returns {string} '2017-05-26'
-   */
-  formatDateToYMD(date = new Date(), split = '-'){
-    let YYYY = date.getFullYear();
-    let MM = date.getMonth() + 1;
-    let DD = date.getDate();
-
-    MM = (MM.toString().length < 2) ? ('0' + MM) : MM;
-    DD = (DD.toString().length < 2) ? ('0' + DD) : DD;
-
-    return `${YYYY}${split}${MM}${split}${DD}`;
-  },
-  /**
-   * 将时间戳转为具体时间 '09:06:03'
-   * @param date 日期，默认为今天
-   * @param line 时间分割符，'09:06:03'，'09-06-03'
-   */
-  formatDateToHMS(date = new Date(), split = ':'){
-    let HH = date.getHours();
-    let mm = date.getMinutes();
-    let ss = date.getSeconds();
-
-    HH = (HH.toString().length < 2) ? ('0' + HH) : HH;
-    mm = (mm.toString().length < 2) ? ('0' + mm) : mm;
-    ss = (ss.toString().length < 2) ? ('0' + ss) : ss;
-
-    return `${HH}${split}${mm}${split}${ss}`;
+  formatDate (time = new Date(), format = 'YYYY-MM-DD HH:mm:ss') {
+    var obj = {
+      YYYY: time.getFullYear(),
+      MM: ('0' + (time.getMonth() + 1)).slice(-2),
+      DD: ('0' + time.getDate()).slice(-2),
+      HH: ('0' + time.getHours()).slice(-2),
+      mm: ('0' + time.getMinutes()).slice(-2),
+      ss: ('0' + time.getSeconds()).slice(-2),
+      w: ['日', '一', '二', '三', '四', '五', '六'][time.getDay()],
+      YY: ('' + time.getFullYear()).slice(-2),
+      M: time.getMonth() + 1,
+      D: time.getDate(),
+      H: time.getHours(),
+      m: time.getMinutes(),
+      s: time.getSeconds()
+    };
+    return format.replace(/([a-z]+)/ig, function ($1) {return obj[$1];});
   }
 };
 

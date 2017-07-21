@@ -3,11 +3,11 @@ let Schema = mongoose.Schema;
 
 // 店铺图片列表
 let photoSchema = Schema({
-  imgUrl: {
+  img_url: {
     type: String,
     default: ''
   },
-  thumbUrl: {
+  thumb_url: {
     type: String,
     default: ''
   }
@@ -17,17 +17,26 @@ let photoSchema = Schema({
 
 // 营业时间
 let servingTimeSchema = Schema({
-  begin: {
-    type: String,
-    required: [true, '请选择开始营业时间']
+  // 星期几
+  day: {
+    type: [Number],
+    required: [true, '请选择星期']
   },
-  end: {
-    type: String,
-    required: [true, '请选择结束营业时间']
+  // 每天的具体营业时间
+  ranges: {
+    type: Array,
+    required: [true, '请选择每日营业时间段']
   },
 }, {
   _id: false
 });
+
+// 店铺电话
+let phoneSchema = Schema({
+  phone: {
+    type: Number
+  }
+})
 
 // 店铺模式
 let ShopSchema = Schema({
@@ -38,7 +47,7 @@ let ShopSchema = Schema({
     required: [true, '请填写餐厅名称']
   },
   // 餐厅地址
-  addressText: {
+  address_text: {
     type: String,
     required: [true, '请填写餐厅地址']
   },
@@ -52,18 +61,18 @@ let ShopSchema = Schema({
     type: Number,
     required: [true, '请选择餐厅纬度']
   },
-  // 店铺联系方式，多个用逗号分开
-  phone: {
-    type: String,
-    required: [true, '请填写联系方式']
+  // 店铺联系方式
+  phone_list: {
+    type: [phoneSchema],
+    required: [true, '请至少填写一个联系方式']
   },
   // 营业时间
-  servingTime: {
+  serving_time: {
     type: [servingTimeSchema],
-    required: [true, '请至少选择一个营业时间段'],
+    required: [true, '请至少选择一个营业时间'],
     default: [{
-      begin: "00:00",
-      end: "23:55"
+      day: [1, 2, 3, 4, 5, 6, 7],
+      ranges: [["00:00", "23:55"]]
     }]
   },
   // 餐厅描述
@@ -73,28 +82,28 @@ let ShopSchema = Schema({
   },
   // 餐厅Logo地址
   // 如果没有，用默认图片替代
-  logoUrl: {
+  logo_url: {
     type: String,
     default: ''
   },
   // 餐厅图片列表
-  photoList: {
+  photo_list: {
     type: [photoSchema]
   },
   // 餐厅整体营业状态
   // 0	餐厅关闭
   // 1	餐厅营业中
-  isOpen: {
+  is_open: {
     type: Number,
     default: 1
   },
   // 是否品牌馆餐厅
-  isPremium: {
+  is_premium: {
     type: Boolean,
     default: true
   },
   // 是否支持准时达
-  isOnTime: {
+  is_ontime: {
     type: Boolean,
     default: true
   },
@@ -103,12 +112,12 @@ let ShopSchema = Schema({
   // 最近一个月美食销量
   // recentFoodPopularity: Number,
   // 起送价
-  deliverAmount: {
+  deliver_amount: {
     type: Number,
     default: 20
   },
   // 配送费，默认0元
-  agentFee: {
+  agent_fee: {
     type: Number,
     default: 0
   },

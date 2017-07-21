@@ -53,13 +53,13 @@ app.use(express.static(path.join(__dirname, 'Upload')));
 app.use('/', index);
 app.use('/users', users);
 
-app.use('/shop', AdminShop);
-app.use('/shop_category', AdminShopCategory);
-app.use('/product', AdminProduct);
-app.use('/product_category', AdminProductCategory);
+app.use('/admin/shop', AdminShop);
+app.use('/admin/shop_category', AdminShopCategory);
+app.use('/admin/product', AdminProduct);
+app.use('/admin/product_category', AdminProductCategory);
 app.use('/upload', Upload);
-app.use('/login', Login);
-app.use('/test', Test);
+app.use('/admin/login', Login);
+app.use('/admin/test', Test);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -72,6 +72,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   console.log('xxxxxxxxxxxxxxxxxxxx');
   console.log('我是错误');
+  console.log(err);
   console.log('xxxxxxxxxxxxxxxxxxxx');
   // set locals, only providing error in development
   res.locals.message = err.message;

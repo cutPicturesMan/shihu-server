@@ -55,7 +55,7 @@ router.route('/')
           });
         }
 
-        ProductCategory.find({shopId: shop[1]._id}, (err, categories)=>{
+        ProductCategory.find({shop_id: shop[1]._id}, (err, categories)=>{
           shop[1].categories = categories;
           console.log(categories);
           res.send({

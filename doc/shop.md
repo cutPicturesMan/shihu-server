@@ -5,18 +5,18 @@
 | ------------- |:------------- | :--------: | :----: | :----- |
 | _id           | ObjectId      | 系统自动创建 | 无     | 店铺id  |
 | name          | String        | 是         | 无     | 店铺名称 |
-| addressText   | String        | 是         | 无     | 店铺地址 |
+| address_text   | String        | 是         | 无     | 店铺地址 |
 | latitude      | Number        | 是         | 无     | 店铺经度 |
 | longitude     | Number        | 是         | 无     | 店铺纬度 |
-| phone         | String        | 是         | 无     | 店铺联系方式，多个用逗号分开 |
-| servingTime   | Array         | 是         | [{begin:"00:00", end:"23:00"}]     | 营业时间，多个对象代表不同营业时段，不支持跨天 |
-| isPremium     | Boolean       | 否         | true   | 是否品牌馆店铺 |
-| isOnTime      | Boolean       | 否         | true   | 是否支持准时达 |
-| isOpen        | Number        | 否         | 1      | 店铺整体营业状态，0店铺关闭，1店铺营业中 |
-| agentFee      | Number        | 否         | 0      | 配送费 |
-| deliverAmount | Number        | 否         | 20     | 起送价 |
-| photoList     | Array         | 否         | []     | 店铺图片列表 |
-| logoUrl       | String        | 否         | Public/images/logo.png     | 店铺Logo地址 |
+| phone_list     | Array        | 是         | 无     | 店铺联系方式 |
+| serving_time   | Array         | 是         | [{day: [1, 2, 3], ranges: [["08:00", "14:00"], ["16:00", "20:00"]]}]     | 营业时间，多个对象代表不同营业时段，不支持跨天。day表示星期几，ranges表示每天的营业时间段 |
+| is_open        | Number        | 否         | 1      | 店铺整体营业状态，0店铺关闭，1店铺营业中 |
+| is_premium     | Boolean       | 否         | true   | 是否品牌馆店铺 |
+| is_onTime      | Boolean       | 否         | true   | 是否支持准时达 |
+| agent_fee      | Number        | 否         | 0      | 配送费 |
+| deliver_amount | Number        | 否         | 20     | 起送价 |
+| photo_list     | Array         | 否         | []     | 店铺图片列表 |
+| logo_url       | String        | 否         | Public/images/logo.png     | 店铺Logo地址 |
 | description   | String        | 否         | ""     | 店铺描述 |
 
 ## 1、查询店铺
@@ -50,7 +50,11 @@
         "addressText": "厦门市观日路8号",
         "latitude": 123456789,
         "longitude": 123456789,
-        "phone": "15960210046,13950381053",
+        "phoneList": [{
+            "phone": 15960210046
+        }, {
+           "phone": 13900006666
+        }],
         "_id": "596739324c9b5513d03d8edf",
         "isOnTime": true,
         "isPremium": true,
@@ -101,7 +105,11 @@
         "addressText": "厦门市观日路8号",
         "latitude": 123456789,
         "longitude": 123456789,
-        "phone": "15960210046,13950381053",
+        "phoneList": [{
+            "phone": 15960210046
+        }, {
+           "phone": 13900006666
+        }],
         "_id": "59676b066863901db0613e21",
         "agentFee": 5,
         "deliverAmount": 20,

@@ -35,27 +35,27 @@ router.route('/')
     if (shop_id) {
       conditionObj.shop_id = shop_id;
     }
-    if(date_from && date_to){
+    if (date_from && date_to) {
       conditionObj.createdAt = {
         $gt: date_from,
         $lt: date_to
-      }
-    }else if(date_from){
+      };
+    } else if (date_from) {
       conditionObj.createdAt = {
         $gt: date_from
-      }
-    }else if(date_to){
+      };
+    } else if (date_to) {
       conditionObj.createdAt = {
         $lt: date_to
-      }
+      };
     }
 
     // 排序条件
     let sortObj = {};
-    if(sort){
-      if(order === 'asc'){
+    if (sort) {
+      if (order === 'asc') {
         sortObj[sort] = 1;
-      }else{
+      } else {
         sortObj[sort] = -1;
       }
     }
@@ -73,21 +73,13 @@ router.route('/')
           });
         }
 
-        // 查询无结果
-        if (categories.length === 0) {
-          return res.send({
-            result: null,
-            error: {
-              message: '对不起，查询无结果'
-            }
+        setTimeout(() => {
+          // 查询结果
+          res.send({
+            result: categories,
+            error: null
           });
-        }
-
-        // 查询有结果
-        res.send({
-          result: categories,
-          error: null
-        });
+        }, 2000);
       });
   })
   // 新增
@@ -131,7 +123,7 @@ router.route('/')
           });
         }
 
-        // 商品分类名称没有重复就入库
+        // 如果商品分类名称没有重复，就写入入库
         collection.save((err, data) => {
           if (err) {
             return res.send({
@@ -182,11 +174,11 @@ router.route('/:_id')
         });
       });
   })
-// 修改
-// 把is_valid字段设置为0，可以让该分类不显示出来，达到类似删除的目的
+  // 修改
+  // 把is_valid字段设置为0，可以让该分类不显示出来，达到类似删除的目的
   .put((req, res) => {
     ProductCategory.update({_id: req.params._id}, req.body, (err, result) => {
-      if(err){
+      if (err) {
         return res.send({
           result: null,
           error: utils.handleError(err)
