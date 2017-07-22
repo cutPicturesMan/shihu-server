@@ -102,7 +102,14 @@ const utils = {
       m: time.getMinutes(),
       s: time.getSeconds()
     };
-    return format.replace(/([a-z]+)/ig, function ($1) {return obj[$1];});
+
+    // 循环错误对象的键组成的数组
+    Object.keys(obj).forEach((value) => {
+      console.log(time);
+      format = format.replace(value, obj[value]);
+    });
+
+    return format;
   }
 };
 

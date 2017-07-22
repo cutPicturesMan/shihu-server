@@ -6,8 +6,7 @@
 | _id           | ObjectId      | 系统自动创建 | 无     | 店铺id  |
 | name          | String        | 是         | 无     | 店铺名称 |
 | address_text   | String        | 是         | 无     | 店铺地址 |
-| latitude      | Number        | 是         | 无     | 店铺经度 |
-| longitude     | Number        | 是         | 无     | 店铺纬度 |
+| address_point  | String        | 是         | 无     | 店铺经纬度 |
 | phone_list     | Array        | 是         | 无     | 店铺联系方式 |
 | serving_time   | Array         | 是         | [{day: [1, 2, 3], ranges: [["08:00", "14:00"], ["16:00", "20:00"]]}]     | 营业时间，多个对象代表不同营业时段，不支持跨天。day表示星期几，ranges表示每天的营业时间段 |
 | is_open        | Number        | 否         | 1      | 店铺整体营业状态，0店铺关闭，1店铺营业中 |

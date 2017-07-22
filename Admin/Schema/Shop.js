@@ -3,7 +3,7 @@ let Schema = mongoose.Schema;
 
 // 店铺图片列表
 let photoSchema = Schema({
-  img_url: {
+  url: {
     type: String,
     default: ''
   },
@@ -51,15 +51,10 @@ let ShopSchema = Schema({
     type: String,
     required: [true, '请填写餐厅地址']
   },
-  // 经度
-  latitude: {
-    type: Number,
-    required: [true, '请选择餐厅经度']
-  },
-  // 纬度
-  longitude: {
-    type: Number,
-    required: [true, '请选择餐厅纬度']
+  // 经纬度
+  address_point: {
+    type: String,
+    required: [true, '请选择餐厅经纬度']
   },
   // 店铺联系方式
   phone_list: {
@@ -83,8 +78,11 @@ let ShopSchema = Schema({
   // 餐厅Logo地址
   // 如果没有，用默认图片替代
   logo_url: {
-    type: String,
-    default: ''
+    type: photoSchema,
+    default: {
+      url: 'logo.png',
+      thumb: 'logo.png'
+    }
   },
   // 餐厅图片列表
   photo_list: {

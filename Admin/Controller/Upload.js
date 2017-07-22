@@ -49,7 +49,7 @@ let uploadConfig = {
   }
 };
 
-let upload = multer(uploadConfig).any();
+let upload = multer(uploadConfig).array('img_list', 8);
 
 router.route('/')
   .post((req, res) => {
@@ -75,7 +75,7 @@ router.route('/')
       // 上传到服务器Upload文件夹下的文件列表
       let fileList = [];
       // 当天日期
-      let date = utils.formatDate(new Date(), 'YYYY-MM-DD');
+      let date = utils.formatDate(new Date(), 'YYYYMMDD');
       // 如果不存在Upload文件夹，则创建一个
       if (!utils.fsExistsSync('./upload')) {
         fs.mkdir('./upload');
