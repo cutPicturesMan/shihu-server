@@ -59,11 +59,7 @@ router.route('/')
 
     Shop
       .find(conditionObj)
-      .sort(sortObj)
-      .limit(limit)
-      .skip(skip)
-      // .populate('categories')
-      .exec((err, shop) => {
+      .count((err, count) => {
         // 查询出错
         if (err) {
           return res.send({
@@ -72,20 +68,39 @@ router.route('/')
           });
         }
 
-        // ProductCategory.find({shop_id: shop[1]._id}, (err, categories)=>{
-        //   shop[1].categories = categories;
-        //   console.log(categories);
-        //   res.send({
-        //     result: shop,
-        //     error: null
-        //   });
-        // });
+        Shop
+          .find(conditionObj)
+          .sort(sortObj)
+          .limit(limit)
+          .skip(skip)
+          // .populate('categories')
+          .exec((err, shop) => {
+            // 查询出错
+            if (err) {
+              return res.send({
+                result: null,
+                error: err
+              });
+            }
 
-        res.send({
-          result: shop,
-          error: null
-        });
-      });
+            // ProductCategory.find({shop_id: shop[1]._id}, (err, categories)=>{
+            //   shop[1].categories = categories;
+            //   console.log(categories);
+            //   res.send({
+            //     result: shop,
+            //     error: null
+            //   });
+            // });
+
+            res.send({
+              result: {
+                rows: shop,
+                total: count
+              },
+              error: null
+            });
+          });
+      })
   })
   // 新增商家
   .post((req, res) => {
@@ -145,7 +160,7 @@ router.route('/')
 router.route('/:_id')
 // 根据_id查询某个店铺
   .get((req, res) => {
-  console.log(2);
+    console.log(2);
     Shop
       .findById(req.params._id)
       .exec((err, shop) => {
