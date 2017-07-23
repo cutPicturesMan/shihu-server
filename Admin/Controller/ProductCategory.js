@@ -18,17 +18,14 @@ router.route('/')
       page = 1,
       limit = 10
     } = req.query;
+
     // 分页
     let skip = (page - 1) * limit;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
     // 查询条件
-    let conditionObj = {
-      is_valid: {
-        $eq: 1
-      }
-    };
+    let conditionObj = {};
     if (name) {
       conditionObj.name = new RegExp(name);
     }

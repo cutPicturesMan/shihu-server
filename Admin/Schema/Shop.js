@@ -119,7 +119,7 @@ let ShopSchema = Schema({
     type: Number,
     default: 0
   },
-  categories: [{
+  category: [{
     type: Schema.Types.ObjectId, ref: 'ProductCategory'
   }]
 }, {

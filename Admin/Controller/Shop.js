@@ -9,33 +9,60 @@ let assert = require('assert');
 router.route('/')
 // 查询商家列表
   .get((req, res) => {
+    console.log(1);
+
     // ?name="麦当劳"&sort="createAt"&order=-1&page=1&limit=10
     let {
       name = '',
+      date_from = '',
+      date_to = '',
       sort = 'createdAt',
-      order = -1,
+      order = 'desc',
       page,
       limit
     } = req.query;
 
-    // 页码，默认第一页
-    page = parseInt(page) || 1;
-    // 每页显示多少条，默认10条
-    limit = parseInt(limit) || 10;
-    // 排序，-1为倒叙desc，1为正序asc
-    let sortObj = {};
-    sortObj[sort] = parseInt(order) === 1 ? 'asc' : 'desc';
-    // sortObj[sort] = parseInt(order) === 1 ? 'asc' : 'desc';
-    console.log(sortObj);
+    // 分页
     let skip = (page - 1) * limit;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
 
-    Shop.find({
-      name: new RegExp(name)
-    })
-      // .populate('categories')
+    // 查询条件
+    let conditionObj = {};
+    if (name) {
+      conditionObj.name = new RegExp(name);
+    }
+    if (date_from && date_to) {
+      conditionObj.createdAt = {
+        $gt: date_from,
+        $lt: date_to
+      };
+    } else if (date_from) {
+      conditionObj.createdAt = {
+        $gt: date_from
+      };
+    } else if (date_to) {
+      conditionObj.createdAt = {
+        $lt: date_to
+      };
+    }
+
+    // 排序条件
+    let sortObj = {};
+    if (sort) {
+      if (order === 'asc') {
+        sortObj[sort] = 1;
+      } else {
+        sortObj[sort] = -1;
+      }
+    }
+
+    Shop
+      .find(conditionObj)
+      .sort(sortObj)
       .limit(limit)
       .skip(skip)
-      .sort(sortObj)
+      // .populate('categories')
       .exec((err, shop) => {
         // 查询出错
         if (err) {
@@ -45,29 +72,19 @@ router.route('/')
           });
         }
 
-        // 没找到符合关键字的店铺
-        if (!shop) {
-          return res.send({
-            result: null,
-            error: {
-              message: '无符合条件的店铺'
-            }
-          });
-        }
-
-        ProductCategory.find({shop_id: shop[1]._id}, (err, categories)=>{
-          shop[1].categories = categories;
-          console.log(categories);
-          res.send({
-            result: shop,
-            error: null
-          });
-        });
-
-        // res.send({
-        //   result: shop,
-        //   error: null
+        // ProductCategory.find({shop_id: shop[1]._id}, (err, categories)=>{
+        //   shop[1].categories = categories;
+        //   console.log(categories);
+        //   res.send({
+        //     result: shop,
+        //     error: null
+        //   });
         // });
+
+        res.send({
+          result: shop,
+          error: null
+        });
       });
   })
   // 新增商家
@@ -128,6 +145,7 @@ router.route('/')
 router.route('/:_id')
 // 根据_id查询某个店铺
   .get((req, res) => {
+  console.log(2);
     Shop
       .findById(req.params._id)
       .exec((err, shop) => {
