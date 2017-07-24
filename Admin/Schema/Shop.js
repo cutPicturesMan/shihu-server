@@ -119,9 +119,10 @@ let ShopSchema = Schema({
     type: Number,
     default: 0
   },
-  category: [{
-    type: Schema.Types.ObjectId, ref: 'ProductCategory'
-  }]
+  category: {
+    type: Number
+    // type: Schema.Types.ObjectId, ref: 'ProductCategory'
+  }
 }, {
   timestamps: true
 });
