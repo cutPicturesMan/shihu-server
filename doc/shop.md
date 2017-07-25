@@ -7,15 +7,15 @@
 | name          | String        | 是         | 无     | 店铺名称 |
 | address_text   | String        | 是         | 无     | 店铺地址 |
 | address_point  | String        | 是         | 无     | 店铺经纬度 |
-| phone_list     | Array        | 是         | 无     | 店铺联系方式 |
+| phone_list     | phoneSchema   | 是         | 无     | 店铺联系方式 |
 | serving_time   | Array         | 是         | [{day: [1, 2, 3], ranges: [["08:00", "14:00"], ["16:00", "20:00"]]}]     | 营业时间，多个对象代表不同营业时段，不支持跨天。day表示星期几，ranges表示每天的营业时间段 |
-| is_open        | Number        | 否         | 1      | 店铺整体营业状态，0店铺关闭，1店铺营业中 |
+| is_open        | Boolean       | 否         | true      | 店铺整体营业状态，0店铺关闭，1店铺营业中 |
 | is_premium     | Boolean       | 否         | true   | 是否品牌馆店铺 |
 | is_onTime      | Boolean       | 否         | true   | 是否支持准时达 |
 | agent_fee      | Number        | 否         | 0      | 配送费 |
 | deliver_amount | Number        | 否         | 20     | 起送价 |
 | photo_list     | Array         | 否         | []     | 店铺图片列表 |
-| logo_url       | String        | 否         | Public/images/logo.png     | 店铺Logo地址 |
+| logo           | String        | 否         | Public/images/logo.png     | 店铺Logo地址 |
 | description   | String        | 否         | ""     | 店铺描述 |
 
 ## 1、查询店铺

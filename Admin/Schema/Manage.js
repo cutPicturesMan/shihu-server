@@ -1,7 +1,7 @@
 let mongoose = require('mongoose');
 
-// 用户
-let StoreCategorySchema = mongoose.Schema({
+// 管理员列表
+let ManageSchema = mongoose.Schema({
   // 用户名
   username: {
     type: String,
@@ -10,6 +10,13 @@ let StoreCategorySchema = mongoose.Schema({
   // 密码
   password: {
     type: String,
+    required: [true, '请填写密码']
+  },
+  // 权限
+  // 1，普通管理员，1）可对自己创建的条目进行增删改查；2）只能查看管理员
+  // 2，超级管理员，可对所有人的创建的条目进行增删改查
+  auth: {
+    type: Number,
     required: [true, '请填写密码']
   },
   // 最后登录的时间
@@ -23,4 +30,4 @@ let StoreCategorySchema = mongoose.Schema({
   timestamps: true
 });
 
-module.exports = StoreCategorySchema;
+module.exports = ManageSchema;

@@ -100,7 +100,7 @@ router.route('/')
               error: null
             });
           });
-      })
+      });
   })
   // 新增商家
   .post((req, res) => {
@@ -160,7 +160,6 @@ router.route('/')
 router.route('/:_id')
 // 根据_id查询某个店铺
   .get((req, res) => {
-    console.log(2);
     Shop
       .findById(req.params._id)
       .exec((err, shop) => {
@@ -180,16 +179,6 @@ router.route('/:_id')
               error: err
             });
           }
-        }
-
-        // 没有找到店铺
-        if (!shop) {
-          return res.send({
-            result: null,
-            error: {
-              message: '经查询无此店铺'
-            }
-          });
         }
 
         // 找到店铺
@@ -245,9 +234,30 @@ router.route('/:_id')
       });
     });
   })
-  // 删除
+  // 单个删除
   .delete((req, res) => {
     Shop.remove({_id: req.params._id}, (err, result) => {
+      if (err) {
+        return res.send({
+          result: null,
+          error: err
+        });
+      }
+
+      res.send({
+        result: result,
+        error: null
+      });
+    });
+  });
+
+router
+// 批量删除
+  .post('/delete_batch', (req, res) => {
+    console.log();
+    Shop.remove({_id: {
+      $in: req.body
+    }}, (err, result) => {
       if (err) {
         return res.send({
           result: null,

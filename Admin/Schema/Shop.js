@@ -34,7 +34,7 @@ let servingTimeSchema = Schema({
 // 店铺电话
 let phoneSchema = Schema({
   phone: {
-    type: Number
+    type: String
   }
 })
 
@@ -77,11 +77,11 @@ let ShopSchema = Schema({
   },
   // 餐厅Logo地址
   // 如果没有，用默认图片替代
-  logo_url: {
+  logo: {
     type: photoSchema,
     default: {
       url: 'logo.png',
-      thumb: 'logo.png'
+      thumb_url: 'logo.png'
     }
   },
   // 餐厅图片列表
@@ -89,11 +89,11 @@ let ShopSchema = Schema({
     type: [photoSchema]
   },
   // 餐厅整体营业状态
-  // 0	餐厅关闭
-  // 1	餐厅营业中
+  // false	餐厅关闭
+  // true	餐厅营业中
   is_open: {
-    type: Number,
-    default: 1
+    type: Boolean,
+    default: true
   },
   // 是否品牌馆餐厅
   is_premium: {
@@ -120,7 +120,7 @@ let ShopSchema = Schema({
     default: 0
   },
   category: {
-    type: Number
+    type: String
     // type: Schema.Types.ObjectId, ref: 'ProductCategory'
   }
 }, {
