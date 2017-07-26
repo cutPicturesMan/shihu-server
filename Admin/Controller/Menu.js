@@ -1,4 +1,4 @@
-let Shop = require('../Model/Shop');
+let Menu = require('../Model/Menu');
 
 let utils = require('../Public/javascripts/utils');
 let express = require('express');
@@ -6,15 +6,10 @@ let router = express.Router();
 let assert = require('assert');
 
 router.route('/')
-// 查询商家列表
+// 查询栏目列表
   .get((req, res) => {
-    // ?name="麦当劳"&sort="createAt"&order=-1&page=1&limit=10
+    // page=1&limit=10
     let {
-      name = '',
-      date_from = '',
-      date_to = '',
-      sort = 'createdAt',
-      order = 'desc',
       page,
       limit
     } = req.query;
@@ -24,37 +19,7 @@ router.route('/')
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
-    // 查询条件
-    let conditionObj = {};
-    if (name) {
-      conditionObj.name = new RegExp(name);
-    }
-    if (date_from && date_to) {
-      conditionObj.createdAt = {
-        $gt: date_from,
-        $lt: date_to
-      };
-    } else if (date_from) {
-      conditionObj.createdAt = {
-        $gt: date_from
-      };
-    } else if (date_to) {
-      conditionObj.createdAt = {
-        $lt: date_to
-      };
-    }
-
-    // 排序条件
-    let sortObj = {};
-    if (sort) {
-      if (order === 'asc') {
-        sortObj[sort] = 1;
-      } else {
-        sortObj[sort] = -1;
-      }
-    }
-
-    Shop
+    Menu
       .find(conditionObj)
       .count((err, count) => {
         // 查询出错
@@ -65,13 +30,13 @@ router.route('/')
           });
         }
 
-        Shop
+        Menu
           .find(conditionObj)
           .sort(sortObj)
           .limit(limit)
           .skip(skip)
           // .populate('categories')
-          .exec((err, shop) => {
+          .exec((err, Menu) => {
             // 查询出错
             if (err) {
               return res.send({
@@ -80,18 +45,9 @@ router.route('/')
               });
             }
 
-            // ProductCategory.find({shop_id: shop[1]._id}, (err, categories)=>{
-            //   shop[1].categories = categories;
-            //   console.log(categories);
-            //   res.send({
-            //     result: shop,
-            //     error: null
-            //   });
-            // });
-
             res.send({
               result: {
-                rows: shop,
+                rows: Menu,
                 total: count
               },
               error: null
@@ -99,9 +55,9 @@ router.route('/')
           });
       });
   })
-  // 新增商家
+  // 新增栏目
   .post((req, res) => {
-    let collection = new Shop(req.body);
+    let collection = new Menu(req.body);
 
     // 验证参数是否正确
     let err = collection.validateSync();
@@ -113,7 +69,7 @@ router.route('/')
     }
 
     // 查找餐厅名称是否重复
-    Shop.findOne({name: collection.name}, (err, shop) => {
+    Menu.findOne({name: collection.name}, (err, Menu) => {
       if (err) {
         return res.send({
           result: null,
@@ -125,7 +81,7 @@ router.route('/')
       }
 
       // 如果餐厅名称重复
-      if (shop) {
+      if (Menu) {
         res.send({
           result: null,
           error: {
@@ -157,9 +113,9 @@ router.route('/')
 router.route('/:_id')
 // 根据_id查询某个店铺
   .get((req, res) => {
-    Shop
+    Menu
       .findById(req.params._id)
-      .exec((err, shop) => {
+      .exec((err, Menu) => {
         if (err) {
           // 传递非法_id
           if (err.name === 'CastError') {
@@ -180,28 +136,28 @@ router.route('/:_id')
 
         // 找到店铺
         res.send({
-          result: shop,
+          result: Menu,
           error: null
         });
       });
   })
   // 修改
   .put((req, res) => {
-    Shop.findByIdAndUpdate(req.params._id, {$set: req.body}, {new: true, runValidators: true}, (err, result) => {
+    Menu.findByIdAndUpdate(req.params._id, {$set: req.body}, {new: true, runValidators: true}, (err, result) => {
       if (err) {
-        // 如果是商家参数校验错误
+        // 如果是栏目参数校验错误
         if (err.errors) {
           return res.send({
             result: null,
             error: utils.validateErrors(err)[0]
           });
         } else if (err.code) {
-          // 如果是商家名称重复等非validate错误
+          // 如果是栏目名称重复等非validate错误
           let code = err.code;
           let msg = err.errmsg;
 
           if (code === 11000) {
-            msg = '商家名称重复';
+            msg = '栏目名称重复';
           }
 
           return res.send({
@@ -233,7 +189,7 @@ router.route('/:_id')
   })
   // 单个删除
   .delete((req, res) => {
-    Shop.remove({_id: req.params._id}, (err, result) => {
+    Menu.remove({_id: req.params._id}, (err, result) => {
       if (err) {
         return res.send({
           result: null,
@@ -252,7 +208,7 @@ router
 // 批量删除
   .post('/delete_batch', (req, res) => {
     console.log();
-    Shop.remove({_id: {
+    Menu.remove({_id: {
       $in: req.body
     }}, (err, result) => {
       if (err) {
