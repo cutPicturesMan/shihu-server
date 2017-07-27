@@ -32,22 +32,4 @@ let ManageSchema = mongoose.Schema({
 
 module.exports = ManageSchema;
 
-// list: [{
-//   _id: 10702,
-//   title: '后台管理',
-//   parent_id: 0,
-//   id_path: '10702',
-//   state: 1
-// }, {
-//   _id: 10900,
-//   title: '目录树列表',
-//   parent_id: 10702,
-//   id_path: '10702,10900',
-//   state: 1
-// }, {
-//   _id: 11000,
-//   title: '权限列表',
-//   parent_id: 10702,
-//   id_path: '10702,11000',
-//   state: 1
-// }]
+

@@ -20,7 +20,7 @@ router.route('/')
     limit = parseInt(limit) || 10;
 
     Menu
-      .find(conditionObj)
+      .find()
       .count((err, count) => {
         // 查询出错
         if (err) {
@@ -31,12 +31,15 @@ router.route('/')
         }
 
         Menu
-          .find(conditionObj)
-          .sort(sortObj)
+          .find()
           .limit(limit)
           .skip(skip)
-          // .populate('categories')
-          .exec((err, Menu) => {
+          .sort({
+            'id_path': 1
+          }, {
+            'order': 1
+          })
+          .exec((err, menu) => {
             // 查询出错
             if (err) {
               return res.send({
@@ -47,7 +50,7 @@ router.route('/')
 
             res.send({
               result: {
-                rows: Menu,
+                rows: menu,
                 total: count
               },
               error: null
@@ -59,7 +62,28 @@ router.route('/')
   .post((req, res) => {
     let collection = new Menu(req.body);
 
-    // 验证参数是否正确
+    // 如果是非根栏目
+    if (collection.parent_id !== 0) {
+      let id_path = collection.id_path.split(',');
+      let order = [];
+      let length = id_path.length;
+
+      // 将本条数据的_id添加到id_path的末尾
+      id_path.push(collection._id);
+      collection.id_path = id_path.join(',');
+
+      // 生成各栏目排序顺序，例如三级栏目排序为 1000, 1000, 1000
+      for(let i = 0; i < length; i++){
+        order.push(1000);
+      }
+      collection.order = order.join(',');
+    } else {
+      // 否则，id_path就直接等于本条数据的_id
+      collection.id_path = collection._id;
+      collection.order = '1000';
+    }
+
+    // 在save操作前提前验证参数是否正确
     let err = collection.validateSync();
     if (err) {
       return res.send({
@@ -68,7 +92,7 @@ router.route('/')
       });
     }
 
-    // 查找餐厅名称是否重复
+    // 查询栏目名称是否重复
     Menu.findOne({name: collection.name}, (err, Menu) => {
       if (err) {
         return res.send({
@@ -80,16 +104,16 @@ router.route('/')
         });
       }
 
-      // 如果餐厅名称重复
+      // 如果栏目名称重复
       if (Menu) {
         res.send({
           result: null,
           error: {
-            message: '餐厅名称重复'
+            message: '栏目名称重复'
           }
         });
       } else {
-        // 餐厅名称没有重复就入库
+        // 栏目名称没有重复就入库
         collection.save((err, data) => {
           if (err) {
             return res.send({
@@ -208,9 +232,11 @@ router
 // 批量删除
   .post('/delete_batch', (req, res) => {
     console.log();
-    Menu.remove({_id: {
-      $in: req.body
-    }}, (err, result) => {
+    Menu.remove({
+      _id: {
+        $in: req.body
+      }
+    }, (err, result) => {
       if (err) {
         return res.send({
           result: null,

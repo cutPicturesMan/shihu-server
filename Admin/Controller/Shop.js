@@ -13,8 +13,6 @@ router.route('/')
       name = '',
       date_from = '',
       date_to = '',
-      sort = 'createdAt',
-      order = 'desc',
       page,
       limit
     } = req.query;
@@ -44,16 +42,6 @@ router.route('/')
       };
     }
 
-    // 排序条件
-    let sortObj = {};
-    if (sort) {
-      if (order === 'asc') {
-        sortObj[sort] = 1;
-      } else {
-        sortObj[sort] = -1;
-      }
-    }
-
     Shop
       .find(conditionObj)
       .count((err, count) => {
@@ -67,7 +55,6 @@ router.route('/')
 
         Shop
           .find(conditionObj)
-          .sort(sortObj)
           .limit(limit)
           .skip(skip)
           // .populate('categories')

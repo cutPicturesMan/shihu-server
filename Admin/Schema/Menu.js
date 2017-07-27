@@ -1,21 +1,23 @@
 let mongoose = require('mongoose');
-
+let Schema = mongoose.Schema;
 // 管理员列表
-let MenuSchema = mongoose.Schema({
+let MenuSchema = Schema({
   // 栏目名
-  title: {
+  name: {
     type: String,
+    unique: true,
     required: [true, '请填写栏目名']
   },
   // 上一级栏目的id，根栏目id为0
   parent_id: {
-    type: String,
+    type: Schema.Types.Mixed,
     default: 0
   },
-  // id路径
+  // id路径，
+  // 上级目录是根目录的情况下(parent_id=0)，id_path与本身的_id相同
   id_path: {
     type: String,
-    required: [true, '请填写密码']
+    required: [true, 'id_path路径字段未自动生成']
   },
   // 该栏目对应的url，在前端会用到该url
   url: {
@@ -27,9 +29,9 @@ let MenuSchema = mongoose.Schema({
     default: true
   },
   // 排序
-  sort: {
+  order: {
     type: String,
-    default: 10000
+    required: [true, 'order排序字段未自动生成']
   }
 }, {
   timestamps: true
