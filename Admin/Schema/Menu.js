@@ -16,8 +16,7 @@ let MenuSchema = Schema({
   // id路径，
   // 上级目录是根目录的情况下(parent_id=0)，id_path与本身的_id相同
   id_path: {
-    type: String,
-    required: [true, 'id_path路径字段未自动生成']
+    type: String
   },
   // 该栏目对应的url，在前端会用到该url
   url: {
@@ -30,8 +29,7 @@ let MenuSchema = Schema({
   },
   // 排序
   order: {
-    type: String,
-    required: [true, 'order排序字段未自动生成']
+    type: String
   }
 }, {
   timestamps: true

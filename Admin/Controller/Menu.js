@@ -1,9 +1,8 @@
-let Menu = require('../Model/Menu');
-
-let utils = require('../Public/javascripts/utils');
 let express = require('express');
+let _ = require('lodash');
+let utils = require('../Public/javascripts/utils');
+let Menu = require('../Model/Menu');
 let router = express.Router();
-let assert = require('assert');
 
 router.route('/')
 // 查询栏目列表
@@ -35,8 +34,6 @@ router.route('/')
           .limit(limit)
           .skip(skip)
           .sort({
-            'id_path': 1
-          }, {
             'order': 1
           })
           .exec((err, menu) => {
@@ -62,27 +59,6 @@ router.route('/')
   .post((req, res) => {
     let collection = new Menu(req.body);
 
-    // 如果是非根栏目
-    if (collection.parent_id !== 0) {
-      let id_path = collection.id_path.split(',');
-      let order = [];
-      let length = id_path.length;
-
-      // 将本条数据的_id添加到id_path的末尾
-      id_path.push(collection._id);
-      collection.id_path = id_path.join(',');
-
-      // 生成各栏目排序顺序，例如三级栏目排序为 1000, 1000, 1000
-      for(let i = 0; i < length; i++){
-        order.push(1000);
-      }
-      collection.order = order.join(',');
-    } else {
-      // 否则，id_path就直接等于本条数据的_id
-      collection.id_path = collection._id;
-      collection.order = '1000';
-    }
-
     // 在save操作前提前验证参数是否正确
     let err = collection.validateSync();
     if (err) {
@@ -93,7 +69,7 @@ router.route('/')
     }
 
     // 查询栏目名称是否重复
-    Menu.findOne({name: collection.name}, (err, Menu) => {
+    Menu.findOne({name: collection.name}, (err, menu) => {
       if (err) {
         return res.send({
           result: null,
@@ -105,7 +81,7 @@ router.route('/')
       }
 
       // 如果栏目名称重复
-      if (Menu) {
+      if (menu) {
         res.send({
           result: null,
           error: {
@@ -113,26 +89,167 @@ router.route('/')
           }
         });
       } else {
-        // 栏目名称没有重复就入库
-        collection.save((err, data) => {
-          if (err) {
-            return res.send({
-              result: null,
-              error: {
-                code: err.code,
-                message: err.errmsg
-              }
-            });
-          }
+        // 如果是根栏目
+        if (collection.parent_id === 0) {
+          // id_path就直接等于本条数据的_id
+          collection.id_path = collection._id;
+        } else {
+          // 否则，将本条数据的_id添加到id_path的末尾
+          let id_path = collection.id_path.split(',');
+          let length = id_path.length;
 
-          res.send({
-            result: data,
-            error: null
-          });
-        });
+          id_path.push(collection._id);
+          collection.id_path = id_path.join(',');
+        }
+
+        // 排序
+        let order = '';
+        // 如果是根栏目，则按order正序，去查找同为根栏目(parent_id = 0)中最大的order
+        if (collection.parent_id === 0) {
+          Menu
+            .find({'parent_id': 0})
+            .sort({order: 1})
+            .exec((err, arr) => {
+              if (err) {
+                return res.send({
+                  result: null,
+                  error: {
+                    code: err.code,
+                    message: err.errmsg
+                  }
+                });
+              }
+
+              // 如果新增栏目是根栏目中的第一个
+              if (arr.length === 0) {
+                order = '1001';
+              } else {
+                // 如果不是根栏目中的第一个
+                // 那么新增栏目的order等于根栏目中的order最大值 + 1
+                let maxItem = arr[arr.length - 1];
+                order = parseInt(maxItem.order) + 1;
+              }
+
+              collection.order = order;
+
+              // 栏目名称没有重复就入库
+              collection.save((err, data) => {
+                if (err) {
+                  return res.send({
+                    result: null,
+                    error: {
+                      code: err.code,
+                      message: err.errmsg
+                    }
+                  });
+                }
+
+                res.send({
+                  result: data,
+                  error: null
+                });
+              });
+            });
+        } else {
+          // 否则，按order正序，去查找同一个上级下面的所有数据
+          // 1、如果是同级中的第一条数据，order = 父级order + ', 1001'
+          // 2、如果不是同级中的第一条数据，order = 同级栏目中最大的order + 1
+          Menu
+            .find({'id_path': new RegExp(collection.parent_id)})
+            .sort({order: 1})
+            .exec((err, arr) => {
+              if (err) {
+                return res.send({
+                  result: null,
+                  error: {
+                    code: err.code,
+                    message: err.errmsg
+                  }
+                });
+              }
+
+              // 同一个上级之下的所有数据
+              let menu = _.groupBy(arr, 'parent_id');
+              // 同级的数据
+              let sibling = menu[collection.parent_id];
+
+              // 如果新增栏目是同级中的第一个
+              // order = 上级order + ',1001'
+              if (!sibling) {
+                arr.every(item => {
+                  if (item._id.toString() === collection.parent_id) {
+                    order = item.order + ',1001';
+                    return false;
+                  } else {
+                    return true;
+                  }
+                });
+              } else {
+                // 如果新增栏目不是同级中的第一个
+                // 那么新增栏目的order等于同级中的order最大值 + 1
+                let maxItem = sibling[sibling.length - 1];
+                let orderArr = maxItem.order.split(',');
+                // orderArr数组中最后一个order加1
+                let lastOrder = parseInt(orderArr[orderArr.length - 1]) + 1;
+                orderArr.splice(-1, 1, lastOrder);
+                order = orderArr.join(',');
+              }
+
+              collection.order = order;
+
+              // 栏目名称没有重复就入库
+              collection.save((err, data) => {
+                if (err) {
+                  return res.send({
+                    result: null,
+                    error: {
+                      code: err.code,
+                      message: err.errmsg
+                    }
+                  });
+                }
+
+                res.send({
+                  result: data,
+                  error: null
+                });
+              });
+            });
+        }
       }
     });
   });
+
+router.post('/test', (req, res) => {
+  let collection = new Menu(req.body);
+  console.log(1);
+  // 在save操作前提前验证参数是否正确
+  // let err = collection.validateSync();
+  // if (err) {
+  //   return res.send({
+  //     result: null,
+  //     error: utils.validateErrors(err)[0]
+  //   });
+  // }
+
+  // 栏目名称没有重复就入库
+  collection.save((err, data) => {
+    if (err) {
+      return res.send({
+        result: null,
+        error: {
+          code: err.code,
+          message: err.errmsg
+        }
+      });
+    }
+
+    res.send({
+      result: data,
+      error: null
+    });
+  });
+});
 
 router.route('/:_id')
 // 根据_id查询某个店铺
