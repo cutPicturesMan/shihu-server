@@ -1,3 +1,4 @@
+let mongoose = require('mongoose');
 let express = require('express');
 let _ = require('lodash');
 let utils = require('../Public/javascripts/utils');
@@ -18,8 +19,7 @@ router.route('/')
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
-    Menu
-      .find()
+    Menu.find()
       .count((err, count) => {
         // 查询出错
         if (err) {
@@ -34,7 +34,7 @@ router.route('/')
           .limit(limit)
           .skip(skip)
           .sort({
-            'order': 1
+            order: 1
           })
           .exec((err, menu) => {
             // 查询出错
@@ -107,7 +107,7 @@ router.route('/')
         // 如果是根栏目，则按order正序，去查找同为根栏目(parent_id = 0)中最大的order
         if (collection.parent_id === 0) {
           Menu
-            .find({'parent_id': 0})
+            .find({parent_id: 0})
             .sort({order: 1})
             .exec((err, arr) => {
               if (err) {
@@ -151,11 +151,17 @@ router.route('/')
               });
             });
         } else {
-          // 否则，按order正序，去查找同一个上级下面的所有数据
+          // 否则，按order正序，去查找上级栏目以及同级所有栏目
           // 1、如果是同级中的第一条数据，order = 父级order + ', 1001'
           // 2、如果不是同级中的第一条数据，order = 同级栏目中最大的order + 1
           Menu
-            .find({'id_path': new RegExp(collection.parent_id)})
+            .find({
+              $or: [{
+                _id: mongoose.Types.ObjectId(collection.parent_id)
+              }, {
+                parent_id: collection.parent_id
+              }]
+            })
             .sort({order: 1})
             .exec((err, arr) => {
               if (err) {
@@ -176,12 +182,12 @@ router.route('/')
               // 如果新增栏目是同级中的第一个
               // order = 上级order + ',1001'
               if (!sibling) {
-                arr.every(item => {
+                arr.some(item => {
                   if (item._id.toString() === collection.parent_id) {
                     order = item.order + ',1001';
-                    return false;
-                  } else {
                     return true;
+                  } else {
+                    return false;
                   }
                 });
               } else {
@@ -249,6 +255,132 @@ router.post('/test', (req, res) => {
       error: null
     });
   });
+});
+
+// 上移或者下移栏目
+// direction: 1为下移，direction：-1为上移
+// 只能在同级栏目中切换
+router.put('/move_item', (req, res) => {
+  let params = req.body;
+
+  // 如果是根栏目排序
+  if (params.parent_id === 0) {
+    // 找到所有根栏目
+    Menu
+      .find({
+        parent_id: 0
+      })
+      .sort({
+        order: 1
+      })
+      .exec((err, menu) => {
+        if (err) {
+          return res.send({
+            result: null,
+            error: {
+              code: err.code,
+              message: err.errmsg
+            }
+          });
+        }
+
+        // 如果数据库中数据只有1条，则无需移动
+        if (menu.length === 1) {
+          return res.send({
+            result: null,
+            error: {
+              message: '暂无同级栏目，无需移动'
+            }
+          });
+        }
+
+        // 如果数据库中数据有多条，则需要移动
+        // 找到本条数据的位置
+        let originalIndex = 0;
+        menu.some((item, index) => {
+          if (item._id.toString() === params._id) {
+            originalIndex = index;
+            return true;
+          } else {
+            return false;
+          }
+        });
+
+        // 如果是上移，且本条数据为第一条，则无需移动
+        if (params.direction === -1 && originalIndex === 0) {
+          return res.send({
+            result: null,
+            error: {
+              message: '已经是第一条了'
+            }
+          });
+        }
+        // 如果是下移，且本条数据为最后一条，则无需移动
+        if (params.direction === 1 && originalIndex === (menu.length - 1)) {
+          return res.send({
+            result: null,
+            error: {
+              message: '已经是最后一条了'
+            }
+          });
+        }
+
+        // 将本条数据的排序与目标数据的排序兑换，同时修改二者所有子栏目的排序
+        let original = menu[originalIndex];
+        let target = menu[originalIndex + params.direction];
+
+        Menu
+          .find({
+            $or: [{
+              id_path: new RegExp(original._id)
+            }, {
+              id_path: new RegExp(target._id)
+            }]
+          })
+          .exec((err, menu) => {
+            if (err) {
+              return res.send({
+                result: null,
+                error: {
+                  code: err.code,
+                  message: err.errmsg
+                }
+              });
+            }
+
+            // console.log(_.groupBy(menu, 'id_path'))
+
+            return res.send({
+              result: menu,
+              error: null
+            })
+          });
+      });
+  } else {
+
+  }
+
+  // 找到上一级下面的所有数据
+  Menu
+    .find({
+      id_path: params.parent_id
+    })
+    .sort({
+      order: 1
+    })
+    .exec((err, menu) => {
+      if (err) {
+        return res.send({
+          result: null,
+          error: {
+            code: err.code,
+            message: err.errmsg
+          }
+        });
+      }
+
+      // 找到本条数据的位置
+    });
 });
 
 router.route('/:_id')
