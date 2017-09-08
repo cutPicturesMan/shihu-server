@@ -5,7 +5,7 @@ let {
   config,
   callback_url,
   oAuthClient
-} = require('../Public/javascripts/eleme');
+} = require('../public/javascripts/eleme');
 let app = express();
 
 // 登录

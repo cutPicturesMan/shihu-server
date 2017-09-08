@@ -43,7 +43,7 @@ let ProductSchema = Schema({
   },
   // // 分类Id
   // categoryId: {
-  //   type: Schema.Types.ObjectId,
+  //   type: schema.Types.ObjectId,
   //   required: [true, '请填写商品所属的分类id']
   // },
   // 商品描述

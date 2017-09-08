@@ -1,6 +1,6 @@
-let Shop = require('../Model/Shop');
+let Shop = require('../model/shop');
 
-let utils = require('../Public/javascripts/utils');
+let utils = require('../public/javascripts/utils');
 let express = require('express');
 let router = express.Router();
 let assert = require('assert');

@@ -1,6 +1,6 @@
 let express = require('express');
 let router = express.Router();
-let Test = require('../Model/Test');
+let Test = require('../model/test');
 
 router.route('/')
   .get((req, res) => {

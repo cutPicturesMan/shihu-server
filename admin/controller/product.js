@@ -1,15 +1,15 @@
 let express = require('express');
 let app = express();
-let utils = require('../Public/javascripts/utils');
+let utils = require('../public/javascripts/utils');
 
-let Product = require('../Model/Product');
+let Product = require('../model/product');
 
 let {
   eleme,
   config,
   callback_url,
   oAuthClient
-} = require('../Public/javascripts/eleme');
+} = require('../public/javascripts/eleme');
 
 // 商品列表
 // app.get('/', (req, res) => {

@@ -1,4 +1,4 @@
-let StoreCategory = require('../Model/ShopCategory');
+let StoreCategory = require('../model/shop_category');
 
 let express = require('express');
 let router = express.Router();

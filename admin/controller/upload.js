@@ -5,7 +5,7 @@ let path = require('path');
 let fs = require('fs');
 let gm = require('gm');
 let co = require('co');
-let utils = require('../Public/javascripts/utils.js');
+let utils = require('../public/javascripts/utils.js');
 
 let Schema = mongoose.Schema;
 let router = express.Router();

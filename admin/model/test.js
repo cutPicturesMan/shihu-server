@@ -1,5 +1,5 @@
 let mongoose = require('mongoose');
-let TestSchema = require('../Schema/Test');
+let TestSchema = require('../schema/test');
 let Test = mongoose.model('Test', TestSchema);
 
 Test.schema.path('color').validate(function(value){

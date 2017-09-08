@@ -1,8 +1,8 @@
 let mongoose = require('mongoose');
 let express = require('express');
 let _ = require('lodash');
-let utils = require('../Public/javascripts/utils');
-let Menu = require('../Model/Menu');
+let utils = require('../public/javascripts/utils');
+let Menu = require('../model/menu');
 let router = express.Router();
 
 router.route('/')

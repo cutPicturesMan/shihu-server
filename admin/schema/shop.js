@@ -121,7 +121,7 @@ let ShopSchema = Schema({
   },
   category: {
     type: String
-    // type: Schema.Types.ObjectId, ref: 'ProductCategory'
+    // type: schema.Types.ObjectId, ref: 'ProductCategory'
   }
 }, {
   timestamps: true

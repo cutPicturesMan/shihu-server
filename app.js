@@ -19,16 +19,16 @@ db.once('open', function(){
 
 });
 
-var index = require('./Admin/Routes/index');
-var users = require('./Admin/Routes/users');
-var AdminShop = require('./Admin/Controller/Shop');
-var AdminShopCategory = require('./Admin/Controller/ShopCategory');
-var AdminProduct = require('./Admin/Controller/Product');
-var AdminProductCategory = require('./Admin/Controller/ProductCategory');
-var AdminMenu = require('./Admin/Controller/Menu');
-var Login = require('./Admin/Controller/Login');
-var Upload = require('./Admin/Controller/Upload');
-var Test = require('./Admin/Controller/Test');
+var index = require('./admin/route/index');
+var users = require('./admin/route/users');
+var AdminShop = require('./admin/controller/shop');
+var AdminShopCategory = require('./admin/controller/shop_category');
+var AdminProduct = require('./admin/controller/product');
+var AdminProductCategory = require('./admin/controller/product_category');
+var AdminMenu = require('./admin/controller/menu');
+var Login = require('./admin/controller/login');
+var Upload = require('./admin/controller/upload');
+var Test = require('./admin/controller/test');
 
 var app = express();
 
