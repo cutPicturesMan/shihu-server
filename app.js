@@ -7,15 +7,16 @@ var session = require('express-session');
 var FileStore = require('session-file-store')(session);
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-// 使用es6原生Promise
+// mongoose使用es6原生Promise
 mongoose.Promise = global.Promise;
 
-mongoose.connect('mongodb://localhost:27017/shihu');
+mongoose.connect('mongodb://119.23.43.11:27017/shihu');
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error'));
 db.once('open', function(){
   console.log('连接成功');
+
 });
 
 var index = require('./Admin/Routes/index');

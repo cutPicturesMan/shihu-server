@@ -105,8 +105,6 @@ router.route('/')
           yield new Promise((resolve, reject) => {
             gm(file.buffer)
               .thumb(140, 140, './upload/' + thumb_url, 100, 'center', (err, stdout) => {
-                console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-                console.log(err);
                 if(err){
                   return reject(err);
                 }

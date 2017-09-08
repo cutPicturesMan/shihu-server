@@ -69,7 +69,7 @@ router.route('/')
     }
 
     // 查询栏目名称是否重复
-    Menu.findOne({name: collection.name}, (err, menu) => {
+    Menu.findOne({ name: collection.name }, (err, menu) => {
       if (err) {
         return res.send({
           result: null,
@@ -107,8 +107,8 @@ router.route('/')
         // 如果是根栏目，则按order正序，去查找同为根栏目(parent_id = 0)中最大的order
         if (collection.parent_id === 0) {
           Menu
-            .find({parent_id: 0})
-            .sort({order: 1})
+            .find({ parent_id: 0 })
+            .sort({ order: 1 })
             .exec((err, arr) => {
               if (err) {
                 return res.send({
@@ -162,7 +162,7 @@ router.route('/')
                 parent_id: collection.parent_id
               }]
             })
-            .sort({order: 1})
+            .sort({ order: 1 })
             .exec((err, arr) => {
               if (err) {
                 return res.send({
@@ -263,107 +263,10 @@ router.post('/test', (req, res) => {
 router.put('/move_item', (req, res) => {
   let params = req.body;
 
-  // 如果是根栏目排序
-  if (params.parent_id === 0) {
-    // 找到所有根栏目
-    Menu
-      .find({
-        parent_id: 0
-      })
-      .sort({
-        order: 1
-      })
-      .exec((err, menu) => {
-        if (err) {
-          return res.send({
-            result: null,
-            error: {
-              code: err.code,
-              message: err.errmsg
-            }
-          });
-        }
-
-        // 如果数据库中数据只有1条，则无需移动
-        if (menu.length === 1) {
-          return res.send({
-            result: null,
-            error: {
-              message: '暂无同级栏目，无需移动'
-            }
-          });
-        }
-
-        // 如果数据库中数据有多条，则需要移动
-        // 找到本条数据的位置
-        let originalIndex = 0;
-        menu.some((item, index) => {
-          if (item._id.toString() === params._id) {
-            originalIndex = index;
-            return true;
-          } else {
-            return false;
-          }
-        });
-
-        // 如果是上移，且本条数据为第一条，则无需移动
-        if (params.direction === -1 && originalIndex === 0) {
-          return res.send({
-            result: null,
-            error: {
-              message: '已经是第一条了'
-            }
-          });
-        }
-        // 如果是下移，且本条数据为最后一条，则无需移动
-        if (params.direction === 1 && originalIndex === (menu.length - 1)) {
-          return res.send({
-            result: null,
-            error: {
-              message: '已经是最后一条了'
-            }
-          });
-        }
-
-        // 将本条数据的排序与目标数据的排序兑换，同时修改二者所有子栏目的排序
-        let original = menu[originalIndex];
-        let target = menu[originalIndex + params.direction];
-
-        Menu
-          .find({
-            $or: [{
-              id_path: new RegExp(original._id)
-            }, {
-              id_path: new RegExp(target._id)
-            }]
-          })
-          .exec((err, menu) => {
-            if (err) {
-              return res.send({
-                result: null,
-                error: {
-                  code: err.code,
-                  message: err.errmsg
-                }
-              });
-            }
-
-            // console.log(_.groupBy(menu, 'id_path'))
-
-            return res.send({
-              result: menu,
-              error: null
-            })
-          });
-      });
-  } else {
-
-  }
-
-  // 找到上一级下面的所有数据
+  // 找到所有同级栏目
   Menu
     .find({
-      id_path: params.parent_id
+      parent_id: params.parent_id
     })
     .sort({
       order: 1
@@ -379,9 +282,168 @@ router.put('/move_item', (req, res) => {
         });
       }
 
+      // 如果数据库中数据只有1条，则无需移动
+      if (menu.length === 1) {
+        return res.send({
+          result: null,
+          error: {
+            message: '暂无同级栏目，无需移动'
+          }
+        });
+      }
+
+      // 如果数据库中数据有多条，则需要移动
       // 找到本条数据的位置
+      let originalIndex = 0;
+      menu.some((item, index) => {
+        if (item._id.toString() === params._id) {
+          originalIndex = index;
+          return true;
+        } else {
+          return false;
+        }
+      });
+
+      // 如果是上移，且本条数据为第一条，则无需移动
+      if (params.direction === -1 && originalIndex === 0) {
+        return res.send({
+          result: null,
+          error: {
+            message: '已经是第一条了'
+          }
+        });
+      }
+      // 如果是下移，且本条数据为最后一条，则无需移动
+      if (params.direction === 1 && originalIndex === (menu.length - 1)) {
+        return res.send({
+          result: null,
+          error: {
+            message: '已经是最后一条了'
+          }
+        });
+      }
+
+      // 将本条数据的order字段与目标数据的order字段交换，同时对换二者所有子栏目order字段中的父级部分
+      let updateArr = [];
+
+      // 原始栏目
+      let original = menu[originalIndex];
+      let oid = original._id.toString();
+      let oOrder = original.order.split(',');
+
+      // 目标栏目
+      let target = menu[originalIndex + params.direction];
+      let tid = target._id.toString();
+      let tOrder = target.order.split(',');
+
+      // 找到需要对调order的两个栏目以及所有子栏目
+      Menu
+        .find({
+          $or: [{
+            id_path: new RegExp(original._id)
+          }, {
+            id_path: new RegExp(target._id)
+          }]
+        })
+        .exec((err, menu) => {
+          if (err) {
+            return res.send({
+              result: null,
+              error: {
+                code: err.code,
+                message: err.errmsg
+              }
+            });
+          }
+
+          // 根据id_path将数据分成两组
+          let arr = _.reduce(menu, (result, item, key) => {
+            if (new RegExp(oid).test(item.id_path.toString())) {
+              (result[oid] || (result[oid] = [])).push(item)
+            } else if (new RegExp(tid).test(item.id_path.toString())) {
+              (result[tid] || (result[tid] = [])).push(item)
+            }
+
+            return result;
+          }, {});
+
+          // 对换order之后的数据
+          let updateData = [];
+
+          arr[oid].forEach((item, index)=>{
+            let order = item.order.split(',');
+            order.splice(0, tOrder.length);
+            item.order = tOrder.concat(order).join(',');
+
+            updateData.push(item);
+          });
+          arr[tid].forEach((item, index)=>{
+            let order = item.order.split(',');
+            order.splice(0, oOrder.length);
+            item.order = oOrder.concat(order).join(',');
+
+            updateData.push(item);
+          });
+
+          // 转为map数据结构，在for...of循环中能够得到index序号
+          updateData = new Map(updateData.map((item, i) => [i, item]));
+
+          async function loop () {
+            for (const [index, item] of updateData) {
+              await new Promise((resolve, reject) => {
+                // 保存更新order之后的每一条数据
+                Menu.findOneAndUpdate(
+                  { _id: item._id },
+                  { order: item.order },
+                  (err, data) => {
+                    if (err) {
+                      return reject(err);
+                    }
+
+                    return resolve();
+                  });
+              });
+            }
+          }
+
+          loop().then(() => {
+            res.send({
+              result: '修改排序成功',
+              error: null
+            });
+          }, (err) => {
+            res.send({
+              code: err.code,
+              message: err.errmsg
+            });
+          })
+        });
     });
-});
+})
+
+// 找到上一级下面的所有数据
+// Menu
+//   .find({
+//     id_path: params.parent_id
+//   })
+//   .sort({
+//     order: 1
+//   })
+//   .exec((err, menu) => {
+//     if (err) {
+//       return res.send({
+//         result: null,
+//         error: {
+//           code: err.code,
+//           message: err.errmsg
+//         }
+//       });
+//     }
+//
+//     // 找到本条数据的位置
+//   });
+// })
+// ;
 
 router.route('/:_id')
 // 根据_id查询某个店铺
@@ -416,53 +478,57 @@ router.route('/:_id')
   })
   // 修改
   .put((req, res) => {
-    Menu.findByIdAndUpdate(req.params._id, {$set: req.body}, {new: true, runValidators: true}, (err, result) => {
-      if (err) {
-        // 如果是栏目参数校验错误
-        if (err.errors) {
-          return res.send({
-            result: null,
-            error: utils.validateErrors(err)[0]
-          });
-        } else if (err.code) {
-          // 如果是栏目名称重复等非validate错误
-          let code = err.code;
-          let msg = err.errmsg;
+    Menu.findByIdAndUpdate(
+      req.params._id,
+      { $set: req.body },
+      { new: true, runValidators: true },
+      (err, result) => {
+        if (err) {
+          // 如果是栏目参数校验错误
+          if (err.errors) {
+            return res.send({
+              result: null,
+              error: utils.validateErrors(err)[0]
+            });
+          } else if (err.code) {
+            // 如果是栏目名称重复等非validate错误
+            let code = err.code;
+            let msg = err.errmsg;
 
-          if (code === 11000) {
-            msg = '栏目名称重复';
+            if (code === 11000) {
+              msg = '栏目名称重复';
+            }
+
+            return res.send({
+              result: null,
+              error: {
+                code: code,
+                message: msg
+              }
+            });
           }
+        }
 
+        // 找不到指定_id的记录
+        if (!result) {
           return res.send({
             result: null,
             error: {
-              code: code,
-              message: msg
+              message: '修改失败，未找到该记录'
             }
           });
         }
-      }
 
-      // 找不到指定_id的记录
-      if (!result) {
-        return res.send({
-          result: null,
-          error: {
-            message: '修改失败，未找到该记录'
-          }
+        // 成功，返回修改后的记录
+        res.send({
+          result: result,
+          error: null
         });
-      }
-
-      // 成功，返回修改后的记录
-      res.send({
-        result: result,
-        error: null
       });
-    });
   })
   // 单个删除
   .delete((req, res) => {
-    Menu.remove({_id: req.params._id}, (err, result) => {
+    Menu.remove({ _id: req.params._id }, (err, result) => {
       if (err) {
         return res.send({
           result: null,
