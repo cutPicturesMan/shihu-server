@@ -1,13 +1,21 @@
-let mongoose = require('mongoose');
-let express = require('express');
 let _ = require('lodash');
 let utils = require('../../public/javascripts/utils');
 let Menu = require('../../model/admin/menu');
-let router = express.Router();
 
-router.route('/')
-// 查询栏目列表
-  .get((req, res) => {
+class MenuComponent {
+  constructor(){
+    this.getMenu = this.getMenu.bind(this);
+    this.addMenu = this.addMenu.bind(this);
+    this.exchangeMenu = this.exchangeMenu.bind(this);
+    this.changeOrder = this.changeOrder.bind(this);
+    this.deleteBatch = this.deleteBatch.bind(this);
+    this.getItem = this.getItem.bind(this);
+    this.updateItem = this.updateItem.bind(this);
+    this.deleteItem = this.deleteItem.bind(this);
+  }
+
+  // 获取导航栏目录，默认按order字段asc排列
+  getMenu(req, res){
     // page=1&limit=10
     let {
       page,
@@ -19,6 +27,7 @@ router.route('/')
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
+    // 查询总页码
     Menu.find()
       .count((err, count) => {
         // 查询出错
@@ -29,6 +38,7 @@ router.route('/')
           });
         }
 
+        // 查询某页数据
         Menu
           .find()
           .limit(limit)
@@ -54,9 +64,10 @@ router.route('/')
             });
           });
       });
-  })
+  }
+
   // 新增栏目
-  .post((req, res) => {
+  addMenu(req, res){
     let collection = new Menu(req.body);
 
     // 在save操作前提前验证参数是否正确
@@ -224,230 +235,197 @@ router.route('/')
         }
       }
     });
-  });
+  }
 
-router.post('/test', (req, res) => {
-  let collection = new Menu(req.body);
-  console.log(1);
-  // 在save操作前提前验证参数是否正确
-  // let err = collection.validateSync();
-  // if (err) {
-  //   return res.send({
-  //     result: null,
-  //     error: utils.validateErrors(err)[0]
-  //   });
-  // }
+  // 移动栏目
+  // direction: 1为下移，direction：-1为上移
+  // 只能在同级栏目中切换
+  exchangeMenu(req, res){
+    let params = req.body;
 
-  // 栏目名称没有重复就入库
-  collection.save((err, data) => {
-    if (err) {
-      return res.send({
-        result: null,
-        error: {
-          code: err.code,
-          message: err.errmsg
+    // 找到所有同级栏目
+    Menu
+      .find({
+        parent_id: params.parent_id
+      })
+      .sort({
+        order: 1
+      })
+      .exec((err, menu) => {
+        if (err) {
+          return res.send({
+            result: null,
+            error: {
+              code: err.code,
+              message: err.errmsg
+            }
+          });
         }
+
+        // 如果数据库中数据只有1条，则无需移动
+        if (menu.length === 1) {
+          return res.send({
+            result: null,
+            error: {
+              message: '暂无同级栏目，无需移动'
+            }
+          });
+        }
+
+        // 如果数据库中数据有多条，则需要移动
+        // 找到本条数据的位置
+        let originalIndex = 0;
+        menu.some((item, index) => {
+          if (item._id.toString() === params._id) {
+            originalIndex = index;
+            return true;
+          } else {
+            return false;
+          }
+        });
+
+        // 如果是上移，且本条数据为第一条，则无需移动
+        if (params.direction === -1 && originalIndex === 0) {
+          return res.send({
+            result: null,
+            error: {
+              message: '已经是第一条了'
+            }
+          });
+        }
+        // 如果是下移，且本条数据为最后一条，则无需移动
+        if (params.direction === 1 && originalIndex === (menu.length - 1)) {
+          return res.send({
+            result: null,
+            error: {
+              message: '已经是最后一条了'
+            }
+          });
+        }
+
+        // 将本条数据的order字段与目标数据的order字段交换，同时对换二者所有子栏目order字段中的父级部分
+        let updateArr = [];
+
+        // 原始栏目
+        let original = menu[originalIndex];
+        let oid = original._id.toString();
+        let oOrder = original.order.split(',');
+
+        // 目标栏目
+        let target = menu[originalIndex + params.direction];
+        let tid = target._id.toString();
+        let tOrder = target.order.split(',');
+
+        // 找到需要对调order的两个栏目以及所有子栏目
+        Menu
+          .find({
+            $or: [{
+              id_path: new RegExp(original._id)
+            }, {
+              id_path: new RegExp(target._id)
+            }]
+          })
+          .exec((err, menu) => {
+            if (err) {
+              return res.send({
+                result: null,
+                error: {
+                  code: err.code,
+                  message: err.errmsg
+                }
+              });
+            }
+
+            // 根据id_path将数据分成两组
+            let arr = _.reduce(menu, (result, item, key) => {
+              if (new RegExp(oid).test(item.id_path.toString())) {
+                (result[oid] || (result[oid] = [])).push(item)
+              } else if (new RegExp(tid).test(item.id_path.toString())) {
+                (result[tid] || (result[tid] = [])).push(item)
+              }
+
+              return result;
+            }, {});
+
+            // 对换order之后的数据
+            let updateData = [];
+
+            arr[oid].forEach((item, index) => {
+              let order = item.order.split(',');
+              order.splice(0, tOrder.length);
+              item.order = tOrder.concat(order).join(',');
+
+              updateData.push(item);
+            });
+            arr[tid].forEach((item, index) => {
+              let order = item.order.split(',');
+              order.splice(0, oOrder.length);
+              item.order = oOrder.concat(order).join(',');
+
+              updateData.push(item);
+            });
+
+            // 转为map数据结构，在for...of循环中能够得到index序号
+            updateData = new Map(updateData.map((item, i) => [i, item]));
+
+            this.changeOrder(updateData).then(() => {
+              res.send({
+                result: '修改排序成功',
+                error: null
+              });
+            }, (err) => {
+              res.send({
+                code: err.code,
+                message: err.errmsg
+              });
+            })
+          });
+      });
+  }
+
+  // 将新的order写入数据库
+  async changeOrder(updateData) {
+    console.log(updateData);
+    for (const [index, item] of updateData) {
+      await new Promise((resolve, reject) => {
+        // 保存更新order之后的每一条数据
+        Menu.findOneAndUpdate(
+          { _id: item._id },
+          { order: item.order },
+          (err, data) => {
+            if (err) {
+              return reject(err);
+            }
+
+            return resolve();
+          });
       });
     }
+  }
 
-    res.send({
-      result: data,
-      error: null
-    });
-  });
-});
-
-// 上移或者下移栏目
-// direction: 1为下移，direction：-1为上移
-// 只能在同级栏目中切换
-router.put('/move_item', (req, res) => {
-  let params = req.body;
-
-  // 找到所有同级栏目
-  Menu
-    .find({
-      parent_id: params.parent_id
-    })
-    .sort({
-      order: 1
-    })
-    .exec((err, menu) => {
+  // 删除，可批量
+  deleteBatch(req, res){
+    Menu.remove({
+      _id: {
+        $in: req.body
+      }
+    }, (err, result) => {
       if (err) {
         return res.send({
           result: null,
-          error: {
-            code: err.code,
-            message: err.errmsg
-          }
+          error: err
         });
       }
 
-      // 如果数据库中数据只有1条，则无需移动
-      if (menu.length === 1) {
-        return res.send({
-          result: null,
-          error: {
-            message: '暂无同级栏目，无需移动'
-          }
-        });
-      }
-
-      // 如果数据库中数据有多条，则需要移动
-      // 找到本条数据的位置
-      let originalIndex = 0;
-      menu.some((item, index) => {
-        if (item._id.toString() === params._id) {
-          originalIndex = index;
-          return true;
-        } else {
-          return false;
-        }
+      res.send({
+        result: result,
+        error: null
       });
+    })
+  }
 
-      // 如果是上移，且本条数据为第一条，则无需移动
-      if (params.direction === -1 && originalIndex === 0) {
-        return res.send({
-          result: null,
-          error: {
-            message: '已经是第一条了'
-          }
-        });
-      }
-      // 如果是下移，且本条数据为最后一条，则无需移动
-      if (params.direction === 1 && originalIndex === (menu.length - 1)) {
-        return res.send({
-          result: null,
-          error: {
-            message: '已经是最后一条了'
-          }
-        });
-      }
-
-      // 将本条数据的order字段与目标数据的order字段交换，同时对换二者所有子栏目order字段中的父级部分
-      let updateArr = [];
-
-      // 原始栏目
-      let original = menu[originalIndex];
-      let oid = original._id.toString();
-      let oOrder = original.order.split(',');
-
-      // 目标栏目
-      let target = menu[originalIndex + params.direction];
-      let tid = target._id.toString();
-      let tOrder = target.order.split(',');
-
-      // 找到需要对调order的两个栏目以及所有子栏目
-      Menu
-        .find({
-          $or: [{
-            id_path: new RegExp(original._id)
-          }, {
-            id_path: new RegExp(target._id)
-          }]
-        })
-        .exec((err, menu) => {
-          if (err) {
-            return res.send({
-              result: null,
-              error: {
-                code: err.code,
-                message: err.errmsg
-              }
-            });
-          }
-
-          // 根据id_path将数据分成两组
-          let arr = _.reduce(menu, (result, item, key) => {
-            if (new RegExp(oid).test(item.id_path.toString())) {
-              (result[oid] || (result[oid] = [])).push(item)
-            } else if (new RegExp(tid).test(item.id_path.toString())) {
-              (result[tid] || (result[tid] = [])).push(item)
-            }
-
-            return result;
-          }, {});
-
-          // 对换order之后的数据
-          let updateData = [];
-
-          arr[oid].forEach((item, index)=>{
-            let order = item.order.split(',');
-            order.splice(0, tOrder.length);
-            item.order = tOrder.concat(order).join(',');
-
-            updateData.push(item);
-          });
-          arr[tid].forEach((item, index)=>{
-            let order = item.order.split(',');
-            order.splice(0, oOrder.length);
-            item.order = oOrder.concat(order).join(',');
-
-            updateData.push(item);
-          });
-
-          // 转为map数据结构，在for...of循环中能够得到index序号
-          updateData = new Map(updateData.map((item, i) => [i, item]));
-
-          async function loop () {
-            for (const [index, item] of updateData) {
-              await new Promise((resolve, reject) => {
-                // 保存更新order之后的每一条数据
-                Menu.findOneAndUpdate(
-                  { _id: item._id },
-                  { order: item.order },
-                  (err, data) => {
-                    if (err) {
-                      return reject(err);
-                    }
-
-                    return resolve();
-                  });
-              });
-            }
-          }
-
-          loop().then(() => {
-            res.send({
-              result: '修改排序成功',
-              error: null
-            });
-          }, (err) => {
-            res.send({
-              code: err.code,
-              message: err.errmsg
-            });
-          })
-        });
-    });
-})
-
-// 找到上一级下面的所有数据
-// Menu
-//   .find({
-//     id_path: params.parent_id
-//   })
-//   .sort({
-//     order: 1
-//   })
-//   .exec((err, menu) => {
-//     if (err) {
-//       return res.send({
-//         result: null,
-//         error: {
-//           code: err.code,
-//           message: err.errmsg
-//         }
-//       });
-//     }
-//
-//     // 找到本条数据的位置
-//   });
-// })
-// ;
-
-router.route('/:_id')
-// 根据_id查询某个店铺
-  .get((req, res) => {
+  // 查询某个店铺
+  getItem(req, res){
     Menu
       .findById(req.params._id)
       .exec((err, Menu) => {
@@ -475,9 +453,10 @@ router.route('/:_id')
           error: null
         });
       });
-  })
-  // 修改
-  .put((req, res) => {
+  }
+
+  // 修改某个店铺
+  updateItem(req, res){
     Menu.findByIdAndUpdate(
       req.params._id,
       { $set: req.body },
@@ -525,9 +504,10 @@ router.route('/:_id')
           error: null
         });
       });
-  })
-  // 单个删除
-  .delete((req, res) => {
+  }
+
+  // 删除某个店铺
+  deleteItem(req, res){
     Menu.remove({ _id: req.params._id }, (err, result) => {
       if (err) {
         return res.send({
@@ -541,29 +521,7 @@ router.route('/:_id')
         error: null
       });
     });
-  });
+  }
+}
 
-router
-// 批量删除
-  .post('/delete_batch', (req, res) => {
-    console.log();
-    Menu.remove({
-      _id: {
-        $in: req.body
-      }
-    }, (err, result) => {
-      if (err) {
-        return res.send({
-          result: null,
-          error: err
-        });
-      }
-
-      res.send({
-        result: result,
-        error: null
-      });
-    });
-  });
-
-module.exports = router;
+module.exports = new MenuComponent();
