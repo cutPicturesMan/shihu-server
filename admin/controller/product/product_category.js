@@ -1,5 +1,5 @@
-let ProductCategory = require('../model/product_category');
-let utils = require('../public/javascripts/utils');
+let ProductCategory = require('../../model/product/product_category');
+let utils = require('../../public/javascripts/utils');
 
 let express = require('express');
 let router = express.Router();

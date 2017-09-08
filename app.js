@@ -19,13 +19,13 @@ db.once('open', function(){
 
 });
 
-var index = require('./admin/route/index');
-var users = require('./admin/route/users');
-var AdminShop = require('./admin/controller/shop');
-var AdminShopCategory = require('./admin/controller/shop_category');
-var AdminProduct = require('./admin/controller/product');
-var AdminProductCategory = require('./admin/controller/product_category');
-var AdminMenu = require('./admin/controller/menu');
+var index = require('./admin/routes/index');
+var users = require('./admin/routes/users');
+var AdminShop = require('./admin/controller/shop/shop');
+var AdminShopCategory = require('./admin/controller/shop/shop_category');
+var AdminProduct = require('./admin/controller/product/product');
+var AdminProductCategory = require('./admin/controller/product/product_category');
+var AdminMenu = require('./admin/controller/admin/menu');
 var Login = require('./admin/controller/login');
 var Upload = require('./admin/controller/upload');
 var Test = require('./admin/controller/test');
